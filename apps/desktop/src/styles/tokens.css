@@ -1,0 +1,100 @@
+@font-face {
+  font-family: "Onest";
+  font-weight: 400;
+  font-display: block;
+  src: url("../assets/fonts/onest-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Onest";
+  font-weight: 500;
+  font-display: block;
+  src: url("../assets/fonts/onest-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Onest";
+  font-weight: 600;
+  font-display: block;
+  src: url("../assets/fonts/onest-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Onest";
+  font-weight: 700;
+  font-display: block;
+  src: url("../assets/fonts/onest-latin-700-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Red Hat Mono";
+  font-weight: 400;
+  font-display: block;
+  src: url("../assets/fonts/red-hat-mono-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Red Hat Mono";
+  font-weight: 500;
+  font-display: block;
+  src: url("../assets/fonts/red-hat-mono-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Red Hat Mono";
+  font-weight: 600;
+  font-display: block;
+  src: url("../assets/fonts/red-hat-mono-latin-600-normal.woff2") format("woff2");
+}
+
+:root {
+  /* color */
+  --g0: #17181a;
+  --g1: #1f2023;
+  --g2: #2a2b2f;
+  --line: #34363a;
+  --line-control: #6a6d74;
+  --text: #f2f2f0;
+  --text-2: #9c9ea3;
+  --cue: #ff5b2e;
+  --cue-ink: #17181a;
+  --cue-hover: #e87650;
+  --cue-wash: rgba(255, 91, 46, 0.14);
+  --mint: #8fd3c1;
+  --mint-wash: rgba(143, 211, 193, 0.14);
+  --notch: #000000;
+
+  /* type */
+  --font-text: "Onest", ui-sans-serif, sans-serif;
+  --font-mono: "Red Hat Mono", ui-monospace, monospace;
+  --fs-xs: 11px;
+  --fs-sm: 12.5px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 28px;
+  --fs-num: 34px;
+  --track-tight: -0.025em;
+  --track-mono: -0.01em;
+
+  /* space */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 20px;
+  --s6: 24px;
+  --s8: 32px;
+  --s10: 48px;
+
+  /* radius */
+  --r-panel: 6px;
+  --r-ctl: 4px;
+  --r-pill: 999px;
+
+  /* depth */
+  --sh-1: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --sh-2: 0 1px 2px rgba(0, 0, 0, 0.45), 0 4px 10px rgba(0, 0, 0, 0.28);
+  --sh-3: 0 2px 4px rgba(0, 0, 0, 0.4), 0 14px 28px rgba(0, 0, 0, 0.35);
+
+  /* motion */
+  --d-fast: 150ms;
+  --d-ui: 220ms;
+  --d-large: 380ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.5, 1);
+}

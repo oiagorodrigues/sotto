@@ -1,0 +1,425 @@
+.onb {
+  container-type: inline-size;
+  container-name: onb;
+  height: 100%;
+  background: var(--g0);
+  overflow: auto;
+}
+.onb-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  min-height: 100%;
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: var(--s3) var(--s4);
+  display: flex;
+  gap: var(--s2);
+  background: var(--g1);
+  border-bottom: 1px solid var(--line);
+}
+.steps li {
+  flex: 1;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  min-width: 0;
+}
+.steps .n {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--line-control);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  flex: none;
+  background: var(--g0);
+}
+.steps .tx {
+  display: none;
+}
+.steps li.done .n {
+  background: var(--mint-wash);
+  border-color: var(--mint);
+  color: var(--mint);
+}
+.steps li.cur {
+  color: var(--text);
+  font-weight: 600;
+}
+.steps li.cur .n {
+  border-color: var(--cue);
+  color: var(--cue);
+  box-shadow: 0 0 0 3px var(--cue-wash);
+}
+.onb-main {
+  padding: var(--s5) var(--s4) var(--s4);
+  min-width: 0;
+}
+.kick {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.onb-main h1:focus {
+  outline: none;
+}
+.onb-main h1:focus-visible {
+  outline: 2px solid var(--cue);
+  outline-offset: 4px;
+}
+.onb-main h1 {
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  letter-spacing: var(--track-tight);
+  line-height: 1.1;
+  margin: var(--s2) 0 var(--s5);
+}
+.onb-empty {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.cmp {
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  background: var(--g1);
+  margin-bottom: var(--s4);
+}
+.cmp-h {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--line);
+}
+.cmp-h h2 {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.cmp-h .chip {
+  margin-left: auto;
+}
+.cmp-cols {
+  display: none;
+}
+.cmp-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--line);
+}
+.cmp-row:last-child {
+  border-bottom: 0;
+}
+.cmp-row .lang {
+  grid-column: 1 / -1;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+.m {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.m .k {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.m .v {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+.m .v small {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  letter-spacing: 0;
+  margin-left: 2px;
+}
+.m .bar-bg {
+  display: block;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--g0);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.m .bar-bg i {
+  display: block;
+  height: 100%;
+  background: var(--text-2);
+  transform-origin: left;
+  animation: grow 700ms var(--ease-out) both;
+}
+.m.best .bar-bg i {
+  background: var(--mint);
+}
+@keyframes grow {
+  from {
+    transform: scaleX(0.82);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.onb-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s2);
+  margin-top: var(--s5);
+}
+.onb-foot .r {
+  display: flex;
+  gap: var(--s2);
+}
+
+@container onb (min-width: 900px) {
+  .onb-body {
+    grid-template-columns: 240px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .onb-body > nav {
+    background: var(--g1);
+    border-right: 1px solid var(--line);
+  }
+  .steps {
+    flex-direction: column;
+    gap: 0;
+    padding: var(--s6) var(--s5);
+    border-bottom: 0;
+  }
+  .steps li {
+    justify-content: flex-start;
+    padding: 0 0 var(--s6);
+    align-items: flex-start;
+    position: relative;
+  }
+  .steps li:last-child {
+    padding-bottom: 0;
+  }
+  .steps li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 11.5px;
+    top: 28px;
+    bottom: 4px;
+    width: 1px;
+    background: var(--line);
+  }
+  .steps li.done:not(:last-child)::before {
+    background: var(--mint);
+  }
+  .steps .tx {
+    display: block;
+    padding-top: 2px;
+  }
+  .steps .tx small {
+    display: block;
+    font-size: var(--fs-xs);
+    color: var(--text-2);
+    font-weight: 400;
+  }
+  .steps .sr {
+    display: none;
+  }
+  .onb-main {
+    padding: var(--s8) var(--s8) var(--s6);
+  }
+  .cmp-cols,
+  .cmp-row {
+    grid-template-columns: 220px repeat(3, minmax(0, 1fr));
+    align-items: center;
+  }
+  .cmp-cols {
+    display: grid;
+    gap: var(--s3);
+    padding: var(--s2) var(--s4);
+    font-size: var(--fs-xs);
+    color: var(--text-2);
+    border-bottom: 1px solid var(--line);
+    background: var(--g0);
+    font-weight: 500;
+  }
+  .cmp-row .lang {
+    grid-column: auto;
+  }
+  .m .k {
+    display: none;
+  }
+}
+
+.btn.ghost {
+  border-color: transparent;
+  color: var(--text-2);
+}
+.btn.ghost:hover:not(:disabled) {
+  color: var(--text);
+}
+.note {
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  background: var(--g1);
+  padding: var(--s4);
+  display: grid;
+  gap: var(--s3);
+  max-width: 640px;
+}
+.note h2 {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+.note p {
+  font-size: var(--fs-md);
+  line-height: 1.5;
+}
+.ack {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  color: var(--mint);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.perms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  background: var(--g1);
+  max-width: 760px;
+}
+.perm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s2) var(--s4);
+  align-items: center;
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--line);
+}
+.perm:last-child {
+  border-bottom: 0;
+}
+.perm-t {
+  display: grid;
+  gap: 2px;
+  grid-column: 1 / -1;
+}
+.perm-name {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+.perm-name b {
+  font-weight: 600;
+  font-size: var(--fs-md);
+}
+.perm-reason {
+  display: block;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.perm-s {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.perm-s.granted {
+  color: var(--mint);
+}
+.perm-s.denied,
+.perm-s.restricted {
+  color: var(--cue);
+}
+.perm-s.denied .led,
+.perm-s.restricted .led {
+  background: var(--cue);
+}
+.cmp-status {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s3) var(--s4);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  border-bottom: 1px solid var(--line);
+}
+.cmp-status .mono,
+.cmp-meta {
+  font-family: var(--font-mono);
+}
+.cmp-meta {
+  padding: var(--s2) var(--s4);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  border-top: 1px solid var(--line);
+}
+.cmp-fail {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--s2);
+  align-items: flex-start;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.cmp-fail svg {
+  margin-top: 2px;
+  color: var(--cue);
+}
+.cmp-row.failed {
+  grid-template-columns: minmax(0, 1fr);
+}
+.cmp-advice {
+  display: flex;
+  gap: var(--s2);
+  align-items: flex-start;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  margin: calc(var(--s2) * -1) 0 0;
+}
+.cmp-advice svg {
+  margin-top: 2px;
+}
+.spin {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--line-control);
+  border-top-color: var(--cue);
+  animation: spin 900ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.onb .mods {
+  max-width: 760px;
+}
+
+@container onb (min-width: 900px) {
+  .perm {
+    grid-template-columns: minmax(0, 1fr) 140px 190px;
+  }
+  .perm-t {
+    grid-column: auto;
+  }
+  .cmp-row.failed {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+}

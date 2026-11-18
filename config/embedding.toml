@@ -1,0 +1,9 @@
+# Embedding model for mode-file retrieval (ADR 0011). The core refuses to use an installed model
+# whose digest differs from this one. To change the model: pull it, run
+# `curl -s http://127.0.0.1:11434/api/tags`, copy the digest and dimensions here, bump as_of.
+as_of = "2026-11-06"
+name = "nomic-embed-text-v2-moe"
+digest = "ff9c2f10ef5e3722623a1b396e1e04efc27a93112c83e9b7b7b9ca1d05620965"
+dimensions = 768
+query_prefix = "search_query: "
+document_prefix = "search_document: "

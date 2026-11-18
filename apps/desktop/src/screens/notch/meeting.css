@@ -1,0 +1,56 @@
+.meet-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s1) var(--s2) var(--s2) var(--s3);
+  animation: meet-in var(--d-ui) var(--ease-out) both;
+}
+.meet-card {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) var(--s3) var(--s3) var(--s4);
+  margin-bottom: var(--s3);
+  background: var(--g1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+}
+.meet-card.due {
+  border-color: var(--cue);
+}
+.meet-icon {
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+}
+.meet-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.meet-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.meet-when {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+@keyframes meet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meet-strip {
+    animation: none;
+  }
+}

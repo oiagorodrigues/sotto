@@ -1,0 +1,9 @@
+.eng {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+}

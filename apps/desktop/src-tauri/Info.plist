@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Sotto listens to your microphone to transcribe what you say in a call.</string>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>Sotto captures the audio of your call to transcribe what the other side says.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Sotto transcribes call audio on this Mac with Apple Speech.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>dev.sotto.app.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>sotto</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

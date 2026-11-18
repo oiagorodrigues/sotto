@@ -1,0 +1,38 @@
+.engine-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s2);
+}
+.engine-opt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  min-height: 32px;
+  padding: 0 var(--s3);
+  border: 1px solid var(--line-control);
+  border-radius: var(--r-ctl);
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+.engine-opt:hover {
+  background: var(--g2);
+}
+.engine-opt[aria-checked="true"] {
+  background: var(--g2);
+  border-color: var(--text);
+}
+.engine-opt:focus-visible {
+  outline: 2px solid var(--cue);
+  outline-offset: 2px;
+}
+.engine-warn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}

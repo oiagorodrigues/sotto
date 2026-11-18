@@ -1,0 +1,63 @@
+[workspace]
+
+[package]
+name = "sotto-api"
+version = "0.1.0"
+edition = "2024"
+license = "UNLICENSED"
+publish = false
+rust-version = "1.90"
+
+[lib]
+name = "sotto_api"
+path = "src/lib.rs"
+
+[[bin]]
+name = "sotto-api"
+path = "src/main.rs"
+
+[dependencies]
+sotto-protocol = { path = "../../crates/sotto-protocol" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "serde"] }
+axum = { version = "0.8", default-features = false, features = ["http1", "json", "form", "query", "tokio", "matched-path", "tracing"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "sync", "time"] }
+sqlx = { version = "0.8.6", default-features = false, features = ["postgres", "runtime-tokio", "tls-rustls", "uuid", "chrono", "json", "migrate", "macros"] }
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+argon2 = "0.5"
+sha2 = "0.10"
+subtle = "2"
+getrandom = "0.3"
+base64 = "0.22"
+async-trait = "0.1"
+lettre = { version = "0.11", default-features = false, features = ["builder", "smtp-transport", "tokio1", "tokio1-rustls", "ring", "webpki-roots"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["trace", "timeout", "set-header"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+
+[dev-dependencies]
+http-body-util = "0.1"
+tower = { version = "0.5", features = ["util"] }
+
+[lints.rust]
+unsafe_code = "deny"
+missing_debug_implementations = "warn"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+unwrap_used = "deny"
+expect_used = "warn"
+dbg_macro = "deny"
+print_stdout = "deny"
+todo = "deny"
+
+# Argon2 at the OWASP parameters takes seconds per hash without optimization, which makes the
+# test suite crawl.
+[profile.dev.package.argon2]
+opt-level = 3
+[profile.dev.package.blake2]
+opt-level = 3

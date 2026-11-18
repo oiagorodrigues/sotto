@@ -1,0 +1,16 @@
+target/
+node_modules/
+dist/
+.build/
+.swiftpm/
+*.xcodeproj/
+.DS_Store
+.env
+.env.*
+!.env.example
+*.sqlite
+*.db
+apps/desktop/src-tauri/gen/
+spikes/**/.build/
+
+apps/desktop/src-tauri/binaries/

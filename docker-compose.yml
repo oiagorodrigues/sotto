@@ -1,0 +1,54 @@
+# A fixed project name: worktrees and clones share one Postgres and Mailpit instead of
+# fighting over the same host ports.
+name: sotto
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: sotto
+      POSTGRES_PASSWORD: sotto
+      POSTGRES_DB: sotto
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - sotto-pg:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sotto -d sotto"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    profiles: ["full"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://sotto:sotto@postgres:5432/sotto
+      BIND_ADDR: 0.0.0.0:8080
+      PUBLIC_BASE_URL: http://localhost:8080
+      SMTP_URL: smtp://mailpit:1025
+      MAIL_FROM: Sotto <login@sotto.local>
+      REALTIME_PROVIDER: fake
+    ports:
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  sotto-pg:

@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sotto, direction 2: Margin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* color: light, porcelain */
+  --porcelain: #F7F6F3;
+  --surface: rgba(247, 246, 243, .82);
+  --surface-solid: #F7F6F3;
+  --surface-sunk: rgba(255, 255, 255, .56);
+  --ink: #14171F;
+  /* #5B6170 measured 3.9:1 on the 82% porcelain over a dark call (about #CDCDCC); this value gives 4.7:1 there and 6.9:1 on solid porcelain */
+  --ink-2: #4E5464;
+  --line: #DCDAD4;
+  --line-strong: #858995;
+  --accent: #B8452F;
+  --accent-hover: #A33B27;
+  --on-accent: #FFFFFF;
+  --accent-mark: #B8452F;
+  --focus: #14171F;
+  --focus-halo: #F7F6F3;
+  --tip-bg: #14171F;
+  --tip-fg: #F7F6F3;
+
+  /* color: black pill */
+  --pill: #000000;
+  --pill-ink: #F2F1EE;
+  --pill-ink-2: #A9ADB8;
+
+  /* type */
+  --font-text: "Hanken Grotesk", ui-rounded, "Avenir Next", sans-serif;
+  --font-mono: "Spline Sans Mono", ui-monospace, Menlo, monospace;
+  --fs-2xs: 11px;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-base: 14px;
+  --fs-md: 15px;
+  --fs-answer: 16px;
+  --fs-lg: 20px;
+  --fs-xl: 26px;
+  --lh-tight: 1.2;
+  --lh-text: 1.45;
+  --lh-answer: 1.5;
+
+  /* spacing */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --target: 28px;
+
+  /* radius */
+  --r-panel: 10px;
+  --r-control: 6px;
+  --r-pill: 999px;
+
+  /* shadow: long, soft, warm */
+  --shadow-panel: 0 1px 2px rgba(70, 48, 24, .07), 0 10px 24px -6px rgba(70, 48, 24, .12), 0 34px 70px -22px rgba(70, 48, 24, .22);
+  --shadow-pill: 0 2px 4px rgba(0, 0, 0, .18), 0 22px 44px -14px rgba(0, 0, 0, .4);
+
+  /* motion */
+  --dur-fast: 150ms;
+  --dur-ui: 220ms;
+  --dur-surface: 380ms;
+  --ease-out: cubic-bezier(.2, .7, .2, 1);
+  --ease-spring: cubic-bezier(.34, 1.45, .64, 1);
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  :root { --ease-spring: linear(0, .22 5%, .62 11%, .94 18%, 1.08 25%, 1.09 31%, 1.03 40%, .99 50%, 1.005 64%, 1); }
+}
+
+.panel.dark, .dark-scope {
+  --surface: rgba(20, 23, 31, .80);
+  --surface-solid: #1B1E27;
+  --surface-sunk: rgba(255, 255, 255, .07);
+  --ink: #ECEBE7;
+  --ink-2: #B0B4BF;
+  --line: rgba(255, 255, 255, .13);
+  --line-strong: #7D8290;
+  --accent-mark: #E27A62;
+  --focus: #ECEBE7;
+  --focus-halo: #14171F;
+  --tip-bg: #ECEBE7;
+  --tip-fg: #14171F;
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 28px -6px rgba(0, 0, 0, .4), 0 36px 72px -22px rgba(0, 0, 0, .55);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: #E7E5E0;
+  color: #14171F;
+  font-family: var(--font-text);
+  font-size: var(--fs-base);
+  line-height: var(--lh-text);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--focus, #14171F); outline-offset: 2px; box-shadow: 0 0 0 4px var(--focus-halo, #F7F6F3); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ic { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* page */
+.page { max-width: 1280px; margin: 0 auto; padding: var(--sp-5) var(--sp-4) var(--sp-7); display: grid; gap: var(--sp-6); }
+@media (min-width: 1000px) { .page { padding: var(--sp-6) var(--sp-6) var(--sp-7); } }
+.top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
+.top h1 { font-size: var(--fs-lg); font-weight: 700; letter-spacing: -.01em; }
+.top span { font: 500 var(--fs-xs)/1 var(--font-mono); color: #4E5464; }
+.screen { display: grid; gap: var(--sp-3); min-width: 0; }
+.cap { display: flex; align-items: center; gap: var(--sp-3); font-size: var(--fs-xs); font-weight: 600; color: #14171F; }
+.cap .n { font: 500 var(--fs-2xs)/1 var(--font-mono); color: #4E5464; }
+.replay { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; height: var(--target); padding: 0 10px; border: 1px solid #B9B6AE; border-radius: var(--r-control); background: transparent; color: #14171F; font-size: var(--fs-xs); font-weight: 500; transition: background var(--dur-fast), transform var(--dur-fast); }
+.replay:hover { background: rgba(255, 255, 255, .6); }
+.replay:active { transform: scale(.97); }
+
+/* desktop backdrops */
+.bd-light {
+  background:
+    radial-gradient(60% 80% at 18% 18%, #D5DCE6 0, transparent 62%),
+    radial-gradient(50% 70% at 88% 28%, #EADFCF 0, transparent 62%),
+    radial-gradient(60% 60% at 60% 100%, #C4CAD6 0, transparent 70%),
+    linear-gradient(160deg, #C9CFD9, #DDD7CD);
+}
+.bd-dark {
+  background:
+    radial-gradient(60% 70% at 20% 10%, #2A3243 0, transparent 62%),
+    radial-gradient(50% 60% at 90% 90%, #1E2530 0, transparent 70%),
+    linear-gradient(160deg, #0E1015, #1C212B);
+}
+.stage { border-radius: 14px; padding: var(--sp-5) var(--sp-4); display: flex; justify-content: center; align-items: flex-start; min-width: 0; }
+@media (max-width: 560px) { .stage { padding: var(--sp-4) 4px; } }
+
+/* translucent surface with solid fallback */
+.glass { background: var(--surface-solid); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: var(--surface); -webkit-backdrop-filter: blur(26px) saturate(1.15); backdrop-filter: blur(26px) saturate(1.15); }
+}
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 0 14px; border-radius: var(--r-control); border: 1px solid var(--line-strong); background: var(--surface-sunk); color: var(--ink); font-size: var(--fs-base); font-weight: 600; transition: background var(--dur-fast), transform var(--dur-fast), border-color var(--dur-fast); }
+.btn:hover { background: rgba(255, 255, 255, .85); }
+.dark .btn:hover { background: rgba(255, 255, 255, .13); }
+.btn:active { transform: scale(.97); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn.sm { min-height: var(--target); padding: 0 10px; font-size: var(--fs-sm); }
+.ibtn { display: inline-flex; align-items: center; justify-content: center; width: var(--target); height: var(--target); border: 0; border-radius: var(--r-control); background: transparent; color: var(--ink-2); transition: background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast); }
+.ibtn:hover { background: rgba(20, 23, 31, .07); color: var(--ink); }
+.dark .ibtn:hover { background: rgba(255, 255, 255, .12); }
+.ibtn:active { transform: scale(.92); }
+.ibtn[aria-pressed="true"] { background: var(--ink); color: var(--surface-solid); }
+kbd { font: 500 var(--fs-2xs)/1 var(--font-mono); color: var(--ink-2); padding: 3px 5px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-sunk); white-space: nowrap; }
+
+/* tooltips */
+[data-tip] { position: relative; }
+[data-tip]::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); right: 0; z-index: 10; padding: 5px 8px; border-radius: 5px; background: var(--tip-bg); color: var(--tip-fg); font: 500 var(--fs-2xs)/1.2 var(--font-text); white-space: nowrap; opacity: 0; pointer-events: none; transform: translateY(2px); transition: opacity var(--dur-fast) 0s, transform var(--dur-fast) 0s; }
+[data-tip][data-tip-start]::after { right: auto; left: 0; }
+[data-tip]:hover::after, [data-tip]:focus-visible::after { opacity: 1; transform: none; transition-delay: 300ms; }
+
+/* chips */
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: var(--r-control); border: 1px solid var(--line); background: var(--surface-sunk); font-size: var(--fs-2xs); font-weight: 600; color: var(--ink); white-space: nowrap; }
+.chip.mono { font-family: var(--font-mono); font-weight: 500; color: var(--ink-2); }
+.invisible { display: inline-flex; align-items: center; gap: 6px; height: var(--target); padding: 0 10px; border-radius: var(--r-control); border: 1px solid var(--line-strong); font-size: var(--fs-xs); font-weight: 600; color: var(--ink); white-space: nowrap; }
+
+/* flag, tick */
+.flag { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-2xs); font-weight: 600; color: var(--ink); white-space: nowrap; }
+.tick { display: inline-block; width: 2px; height: 11px; border-radius: 1px; background: var(--accent-mark); transform: skewX(-14deg); }
+
+/* overlay panel */
+.panel { --panel-w: 380px; width: min(var(--panel-w), 100%); container: panel / inline-size; position: relative; }
+@media (min-width: 1000px) { .panel.wide { --panel-w: 640px; } }
+.panel-in { display: block; }
+.p-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2) var(--sp-3); padding: var(--sp-4) var(--sp-4) var(--sp-2); }
+.p-title { display: grid; gap: 6px; justify-items: start; min-width: 0; }
+.p-title h3 { font-size: var(--fs-md); font-weight: 700; letter-spacing: -.005em; line-height: var(--lh-tight); }
+.convo { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 14px; padding: var(--sp-2) var(--sp-4) var(--sp-3); }
+.line { grid-column: 1; min-width: 0; }
+.line .meta { display: flex; align-items: center; gap: var(--sp-2); min-height: 18px; }
+.line time { font: 500 var(--fs-2xs)/1 var(--font-mono); color: var(--ink-2); }
+.who { font-size: var(--fs-2xs); font-weight: 700; color: var(--ink); }
+.line p { margin-top: 2px; font-size: var(--fs-sm); line-height: 19px; }
+.line.them p { color: var(--ink); font-weight: 500; }
+.line.me .who { color: var(--ink-2); font-weight: 600; }
+.line.me p { color: var(--ink-2); font-weight: 400; }
+.line .flag { margin-left: auto; }
+
+.note { position: relative; grid-column: 1; margin-top: -6px; padding: 2px 0 0 16px; min-width: 0; }
+.rule { position: absolute; top: 0; height: 100%; overflow: visible; pointer-events: none; }
+.rule line { stroke: var(--accent-mark); stroke-width: 1.5; stroke-linecap: round; fill: none; }
+.rule.rw { display: none; left: -28px; width: 28px; }
+.rule.rn { left: 0; width: 2px; }
+.note-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin-bottom: 4px; }
+.note-head .label { font-size: var(--fs-2xs); font-weight: 700; color: var(--ink-2); letter-spacing: .02em; }
+.answer { font-size: var(--fs-answer); font-weight: 500; line-height: var(--lh-answer); letter-spacing: -.003em; color: var(--ink); }
+.answer .w { display: inline; }
+.answer .tail { animation: tailfade 3.6s var(--ease-out) infinite both; animation-delay: calc(var(--t, 0) * 140ms); }
+@keyframes tailfade { 0%, 12% { opacity: .1; } 34%, 100% { opacity: 1; } }
+.note-foot { display: flex; align-items: center; gap: 2px; margin-top: var(--sp-2); margin-left: -6px; }
+
+@container panel (min-width: 560px) {
+  .convo { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); column-gap: 28px; }
+  .note { grid-column: 2; grid-row: 4; margin-top: 0; padding-left: 14px; }
+  .rule.rw { display: block; }
+  .rule.rn { display: none; }
+  .p-head { padding: 18px 20px 6px; }
+  .convo { padding: 8px 20px 16px; }
+  .ask { margin: 0 20px 14px; }
+  .p-title { grid-auto-flow: column; align-items: center; gap: var(--sp-3); }
+}
+
+.ask { display: flex; align-items: center; gap: 4px; margin: 0 var(--sp-4) var(--sp-3); padding: 3px 8px 3px 3px; min-height: 36px; border: 1px solid var(--line-strong); border-radius: var(--r-control); background: var(--surface-sunk); }
+.ask:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ask input { flex: 1; min-width: 0; height: var(--target); border: 0; background: transparent; outline: 0; font-size: var(--fs-base); cursor: text; color: var(--ink); }
+.ask input::placeholder { color: var(--ink-2); opacity: 1; }
+.ask .ibtn { flex: none; }
+
+/* entrance: only plays when .enter is set (initial render is the settled state) */
+.enter .rule line { stroke-dasharray: 1; animation: draw 420ms var(--ease-out) both; }
+.enter .rule .h { animation-duration: 200ms; }
+.enter .rule .v { animation-delay: 160ms; }
+.enter .note .slide { animation: slidein 260ms var(--ease-out) 320ms both; }
+.enter .answer .w { animation: wordin 260ms var(--ease-out) both; animation-delay: calc(560ms + var(--i) * 38ms); }
+.enter .answer .tail { animation: wordin 260ms var(--ease-out) both; animation-delay: calc(560ms + var(--i) * 38ms); }
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes slidein { from { opacity: 0; transform: translateX(6px); } to { opacity: 1; transform: none; } }
+@keyframes wordin { from { opacity: 0; } to { opacity: 1; } }
+
+/* notch */
+.notch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--sp-3); }
+.scene-wrap { display: grid; gap: var(--sp-2); align-content: start; min-width: 0; }
+.scene { position: relative; border-radius: 14px; overflow: hidden; padding-bottom: var(--sp-5); }
+.scene.s-compact { min-height: 120px; }
+@media (min-width: 1000px) { .scene { min-height: 340px; } }
+.menubar { height: 26px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; background: rgba(255, 255, 255, .34); }
+.menubar i { display: block; width: 26px; height: 6px; border-radius: 3px; background: rgba(20, 23, 31, .28); margin-right: 10px; }
+.menubar div { display: flex; }
+.sub { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-xs); font-weight: 500; color: #4E5464; }
+.sub b { font-weight: 700; color: #14171F; }
+.notch { width: min(364px, calc(100% - 16px)); margin: -26px auto 0; position: relative; transform-origin: top center; }
+.nhead { height: 34px; display: grid; grid-template-columns: 1fr 160px 1fr; align-items: center; padding: 0 14px; background: var(--pill); color: var(--pill-ink); border-radius: 0 0 17px 17px; box-shadow: var(--shadow-pill); font-size: var(--fs-xs); font-weight: 600; }
+.notch.open .nhead { border-radius: 0; box-shadow: none; }
+.nl { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.nr { display: flex; justify-content: flex-end; font: 500 var(--fs-xs)/1 var(--font-mono); color: var(--pill-ink); }
+.level { display: inline-flex; align-items: center; gap: 2px; height: 14px; }
+.level i { display: block; width: 2.5px; height: 14px; border-radius: 2px; background: var(--pill-ink); transform-origin: center; animation: level 900ms ease-in-out infinite alternate; }
+.level i:nth-child(1) { animation-duration: 760ms; transform: scaleY(.45); }
+.level i:nth-child(2) { animation-duration: 540ms; animation-delay: -200ms; transform: scaleY(.9); }
+.level i:nth-child(3) { animation-duration: 880ms; animation-delay: -420ms; transform: scaleY(.6); }
+.level i:nth-child(4) { animation-duration: 640ms; animation-delay: -100ms; transform: scaleY(.3); }
+@keyframes level { from { transform: scaleY(.25); } to { transform: scaleY(1); } }
+.dots { display: inline-flex; gap: 3px; }
+.dots i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; animation: dot 1s ease-in-out infinite; }
+.dots i:nth-child(2) { animation-delay: .15s; }
+.dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes dot { 0%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-2px); } }
+.nbody { padding: var(--sp-4); border-radius: 0 0 var(--r-panel) var(--r-panel); border-top: 0; }
+.nrow { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.state { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-xs); font-weight: 700; color: var(--ink); white-space: nowrap; }
+.pq { position: relative; padding-left: 16px; }
+.pq p { font-size: var(--fs-sm); line-height: 19px; font-weight: 500; color: var(--ink); }
+.caret { display: inline-block; width: 1.5px; height: 14px; margin-left: 2px; vertical-align: -2px; background: var(--ink); animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.skel { display: grid; gap: 8px; margin: var(--sp-4) 0 2px 16px; }
+.skel i { display: block; height: 9px; border-radius: 5px; background: var(--line); animation: pulse 1.4s ease-in-out infinite; }
+.skel i:nth-child(2) { animation-delay: .15s; width: 88%; }
+.skel i:nth-child(3) { animation-delay: .3s; width: 54%; }
+@keyframes pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+.nbody .note { grid-column: auto; margin-top: var(--sp-3); }
+.nbody .answer { font-size: var(--fs-md); }
+.enter.notch .nbody { animation: expand var(--dur-surface) var(--ease-spring) both; transform-origin: top center; }
+.enter.notch .nhead { animation: headin var(--dur-ui) var(--ease-out) both; }
+@keyframes expand { from { opacity: 0; transform: translateY(-12px) scaleY(.86); } to { opacity: 1; transform: none; } }
+@keyframes headin { from { opacity: .6; } to { opacity: 1; } }
+
+/* window */
+.win-stage { padding: var(--sp-5) var(--sp-5); }
+@media (max-width: 560px) { .win-stage { padding: var(--sp-4) 4px; } }
+.win { container: win / inline-size; width: min(1000px, 100%); }
+.titlebar { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+.titlebar .lights { display: flex; gap: 8px; }
+.titlebar .lights i { width: 12px; height: 12px; border-radius: 50%; background: var(--line-strong); opacity: .45; }
+.titlebar h2 { flex: 1; text-align: center; font-size: var(--fs-sm); font-weight: 600; color: var(--ink-2); margin-right: 44px; }
+.win-body { display: grid; grid-template-columns: minmax(0, 1fr); }
+.side { padding: var(--sp-3); border-bottom: 1px solid var(--line); }
+.side ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.side button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 0 10px; border: 0; border-radius: var(--r-control); background: transparent; color: var(--ink-2); font-size: var(--fs-base); font-weight: 500; text-align: left; transition: background var(--dur-fast), color var(--dur-fast); }
+.side button:hover { background: rgba(20, 23, 31, .06); color: var(--ink); }
+.side button[aria-current="page"] { background: rgba(20, 23, 31, .08); color: var(--ink); font-weight: 700; }
+.side .ic { display: none; }
+.content { padding: var(--sp-5) var(--sp-4) 0; min-width: 0; }
+.content > h3 { font-size: var(--fs-xl); font-weight: 700; letter-spacing: -.015em; line-height: var(--lh-tight); margin-bottom: var(--sp-4); }
+.form { container: form / inline-size; }
+.grp { padding: var(--sp-4) 0 var(--sp-3); border-top: 1px solid var(--line); display: grid; gap: var(--sp-3); }
+.grp-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
+.grp-head h4 { font-size: var(--fs-md); font-weight: 700; }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-xs); font-weight: 600; color: var(--ink); }
+.status .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); animation: pulse 1.6s ease-in-out infinite; }
+.frow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; align-items: start; }
+.frow > label, .frow > .lbl { font-size: var(--fs-sm); font-weight: 600; color: var(--ink); padding-top: 6px; }
+.ctl { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); min-width: 0; }
+.key { display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--r-control); background: var(--surface-sunk); font: 500 var(--fs-sm)/1 var(--font-mono); letter-spacing: .01em; }
+.field, select.field { height: 32px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: var(--r-control); background: var(--surface-sunk); color: var(--ink); font-size: var(--fs-base); cursor: text; width: 100%; max-width: 280px; }
+select.field { cursor: pointer; appearance: none; padding-right: 30px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234E5464' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; }
+.field.num { max-width: 120px; text-align: right; font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-2); font-size: var(--fs-sm); }
+.actions { display: flex; justify-content: flex-end; gap: var(--sp-2); padding: var(--sp-4); margin: var(--sp-4) calc(var(--sp-4) * -1) 0; border-top: 1px solid var(--line); }
+.stage-note { display: none; }
+
+@container win (min-width: 900px) {
+  .win-body { grid-template-columns: 208px minmax(0, 1fr); }
+  .side { border-bottom: 0; border-right: 1px solid var(--line); padding: var(--sp-4) var(--sp-3); background: rgba(20, 23, 31, .025); }
+  .side ul { flex-direction: column; flex-wrap: nowrap; }
+  .side .ic { display: block; }
+  .content { padding: var(--sp-6) var(--sp-6) 0; }
+  .actions { margin: var(--sp-5) calc(var(--sp-6) * -1) 0; padding: var(--sp-4) var(--sp-6); }
+}
+@container form (min-width: 560px) {
+  .frow { grid-template-columns: 220px minmax(0, 1fr); gap: var(--sp-5); }
+  .grp { gap: var(--sp-4); padding: var(--sp-5) 0 var(--sp-4); }
+}
+
+/* onboarding */
+.ob { padding: var(--sp-5) var(--sp-4) 0; container: ob / inline-size; }
+.steps { list-style: none; margin: 0 0 var(--sp-5); padding: 0; display: flex; align-items: center; gap: 0; }
+.steps li { display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm); font-weight: 500; color: var(--ink-2); flex: none; }
+.steps li + li::before { content: ""; display: block; width: clamp(16px, 4cqw, 56px); height: 1px; background: var(--line-strong); margin: 0 12px; }
+.steps .dot { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line-strong); font: 500 var(--fs-2xs)/1 var(--font-mono); }
+.steps li.done .dot { background: var(--ink); border-color: var(--ink); color: var(--surface-solid); }
+.steps li[aria-current="step"] { color: var(--ink); font-weight: 700; }
+.steps li[aria-current="step"] .dot { border: 2px solid var(--ink); color: var(--ink); }
+@container ob (max-width: 620px) {
+  .steps li .txt { display: none; }
+  .steps li[aria-current="step"] .txt { display: inline; }
+  .steps li + li::before { width: 14px; margin: 0 6px; }
+}
+.ob h3 { font-size: var(--fs-xl); font-weight: 700; letter-spacing: -.015em; line-height: var(--lh-tight); }
+.ob .lede { margin: var(--sp-2) 0 var(--sp-5); color: var(--ink-2); font-size: var(--fs-base); max-width: 56ch; }
+.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
+.tbl caption { text-align: left; }
+.tbl th, .tbl td { padding: 11px 8px; border-top: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.tbl thead th { border-top: 0; border-bottom: 1px solid var(--line-strong); font-size: var(--fs-xs); font-weight: 600; color: var(--ink-2); padding-bottom: 8px; vertical-align: bottom; }
+.tbl .num { text-align: right; font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl thead .num { font-family: var(--font-text); font-weight: 600; white-space: normal; }
+.tbl tr.g th { padding-top: 16px; padding-bottom: 6px; font-size: var(--fs-sm); font-weight: 700; color: var(--ink); border-top: 1px solid var(--line); }
+.tbl tr.g + tr th, .tbl tr.g + tr td { border-top: 0; }
+.tbl tbody th[scope="row"] { font-weight: 500; }
+.tbl td.cloud { padding-top: 12px; }
+.cloudrow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4); }
+.switch { position: relative; flex: none; width: 40px; height: 24px; padding: 0; border: 1px solid var(--line-strong); border-radius: var(--r-pill); background: var(--surface-sunk); transition: background var(--dur-ui) var(--ease-out); }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); transition: transform var(--dur-ui) var(--ease-spring); }
+.switch[aria-checked="true"] { background: var(--ink); }
+.switch[aria-checked="true"]::after { transform: translateX(16px); background: var(--surface-solid); }
+.fine { margin-top: 4px; color: var(--ink-2); font-size: var(--fs-sm); }
+
+/* dialog */
+dialog { border: 1px solid var(--line); border-radius: var(--r-panel); padding: var(--sp-5); width: min(380px, calc(100% - 32px)); background: #F7F6F3; color: #14171F; box-shadow: var(--shadow-panel); }
+dialog::backdrop { background: rgba(20, 23, 31, .45); }
+dialog h4 { font-size: var(--fs-md); font-weight: 700; }
+dialog p { margin: var(--sp-2) 0 var(--sp-5); color: #4E5464; }
+dialog .row { display: flex; justify-content: flex-end; gap: var(--sp-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+  .answer .tail { opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="M2 2l20 20"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="8" width="10" height="8" rx="1"/></symbol>
+    <symbol id="i-enter" viewBox="0 0 24 24"><path d="m9 10-5 5 5 5"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-replay" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+    <symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-circle-dash" viewBox="0 0 24 24"><path d="M10.1 2.2a10 10 0 0 1 3.8 0"/><path d="M17.6 3.7a10 10 0 0 1 2.7 2.7"/><path d="M21.8 10.1a10 10 0 0 1 0 3.8"/><path d="M20.3 17.6a10 10 0 0 1-2.7 2.7"/><path d="M13.9 21.8a10 10 0 0 1-3.8 0"/><path d="M6.4 20.3a10 10 0 0 1-2.7-2.7"/><path d="M2.2 13.9a10 10 0 0 1 0-3.8"/><path d="M3.7 6.4a10 10 0 0 1 2.7-2.7"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 10 5-10 5L2 7l10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></symbol>
+    <symbol id="i-command" viewBox="0 0 24 24"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  </defs>
+</svg>
+
+<main class="page">
+  <header class="top">
+    <h1>Sotto · Margin</h1>
+    <span>Direction 2 · round 1</span>
+  </header>
+
+  <!-- 1 NOTCH -->
+  <section class="screen" aria-labelledby="c1">
+    <h2 class="cap" id="c1"><span class="n">01</span>Notch pill <button class="replay" type="button" data-replay="#notch-prep,#notch-ready"><svg class="ic" aria-hidden="true"><use href="#i-replay"/></svg>Replay</button></h2>
+    <div class="notch-grid">
+      <figure class="scene-wrap" style="margin:0">
+        <div class="scene s-compact bd-dark">
+          <div class="menubar" aria-hidden="true"><div><i></i><i></i><i></i></div><div><i></i><i></i></div></div>
+          <div class="notch">
+            <div class="nhead">
+              <div class="nl"><span class="level" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Listening</div>
+              <span aria-hidden="true"></span>
+              <div class="nr"><time aria-label="Session time 12 minutes 48 seconds">12:48</time></div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="sub"><b>Compact</b> Listening, live level, session timer</figcaption>
+      </figure>
+
+      <figure class="scene-wrap" style="margin:0">
+        <div class="scene bd-light">
+          <div class="menubar" aria-hidden="true"><div><i></i><i></i><i></i></div><div><i></i><i></i></div></div>
+          <div class="notch open" id="notch-prep">
+            <div class="nhead">
+              <div class="nl"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>Preparing</div>
+              <span aria-hidden="true"></span>
+              <div class="nr"><time>12:48</time></div>
+            </div>
+            <div class="nbody glass" role="status">
+              <div class="nrow">
+                <span class="flag"><i class="tick"></i>Question detected</span>
+                <span class="state">Preparing answer</span>
+              </div>
+              <div class="pq">
+                <svg class="rule rn" aria-hidden="true"><line class="v" pathLength="1" x1="1" x2="1" y1="0" y2="100%"/></svg>
+                <p>So how would you handle the migration if their API<span class="caret" aria-hidden="true"></span></p>
+              </div>
+              <div class="skel" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="sub"><b>Expanded</b> Preparing, partial question</figcaption>
+      </figure>
+
+      <figure class="scene-wrap" style="margin:0">
+        <div class="scene bd-light">
+          <div class="menubar" aria-hidden="true"><div><i></i><i></i><i></i></div><div><i></i><i></i></div></div>
+          <div class="notch open" id="notch-ready">
+            <div class="nhead">
+              <div class="nl"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Ready</div>
+              <span aria-hidden="true"></span>
+              <div class="nr"><time>12:48</time></div>
+            </div>
+            <div class="nbody glass">
+              <div class="nrow">
+                <span class="flag"><i class="tick"></i>Question detected</span>
+                <span class="chip mono">answer 640 ms</span>
+              </div>
+              <div class="pq">
+                <p>So how would you handle the migration if their API starts rate limiting us?</p>
+              </div>
+              <div class="note">
+                <svg class="rule rn" aria-hidden="true"><line class="v" pathLength="1" x1="1" x2="1" y1="0" y2="100%"/></svg>
+                <div class="slide">
+                  <p class="answer" data-stream>Queue the writes and drain them at the vendor's limit. Batch orders in groups of 500, retry with exponential backoff, and keep a dead-letter queue for anything that fails three times. Monday spikes then become a longer drain, not dropped orders.</p>
+                  <div class="note-foot">
+                    <button class="ibtn" type="button" aria-label="Copy answer" data-tip="Copy answer  ⌘C" data-tip-start><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
+                    <button class="ibtn" type="button" aria-label="Dismiss answer" data-tip="Dismiss  Esc" data-tip-start><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="sub"><b>Expanded</b> Answer ready</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 2 OVERLAY -->
+  <section class="screen" aria-labelledby="c2">
+    <h2 class="cap" id="c2"><span class="n">02</span>Floating overlay panel, light and dark <button class="replay" type="button" data-replay="#ov-light,#ov-dark"><svg class="ic" aria-hidden="true"><use href="#i-replay"/></svg>Replay detection</button></h2>
+    <div class="ov-grid" style="display:grid;gap:12px">
+      <style>@media (min-width:1000px){.ov-grid{grid-template-columns:minmax(0,1fr) 444px}}</style>
+      <div class="stage bd-light">
+        <article class="panel wide glass" id="ov-light" aria-label="Sotto overlay">
+          <header class="p-head">
+            <div class="p-title"><h3>Roadmap sync · Acme</h3><span class="chip">Sales discovery</span></div>
+            <span class="invisible"><svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg>Invisible</span>
+          </header>
+          <div class="convo">
+            <article class="line them"><div class="meta"><time>14:02</time><b class="who">Them</b></div><p>We tried two vendors last year and both broke under load.</p></article>
+            <article class="line me"><div class="meta"><time>14:02</time><b class="who">Me</b></div><p>Got it. What volume are we talking about?</p></article>
+            <article class="line them"><div class="meta"><time>14:03</time><b class="who">Them</b></div><p>Around forty thousand orders a day, with spikes on Mondays.</p></article>
+            <article class="line them q"><div class="meta"><time>14:03</time><b class="who">Them</b><span class="flag"><i class="tick"></i>Question detected</span></div><p>So how would you handle the migration if their API starts rate limiting us?</p></article>
+            <aside class="note" aria-label="Suggested answer">
+              <svg class="rule rw" aria-hidden="true"><line class="h" pathLength="1" x1="0" x2="28" y1="9" y2="9"/><line class="v" pathLength="1" x1="28" x2="28" y1="9" y2="100%"/></svg>
+              <svg class="rule rn" aria-hidden="true"><line class="v" pathLength="1" x1="1" x2="1" y1="0" y2="100%"/></svg>
+              <div class="slide">
+                <div class="note-head"><span class="label">Answer</span><span class="chip mono">answer 640 ms</span></div>
+                <p class="answer" data-stream aria-live="polite">Queue the writes and drain them at the vendor's limit. Batch orders in groups of 500, retry with exponential backoff, and keep a dead-letter queue for anything that fails three times. Monday spikes then become a longer drain, not dropped orders.</p>
+                <div class="note-foot">
+                  <button class="ibtn" type="button" aria-label="Copy answer" data-tip="Copy answer  ⌘C" data-tip-start><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
+                  <button class="ibtn" type="button" aria-label="Dismiss answer" data-tip="Dismiss  Esc" data-tip-start><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+                </div>
+              </div>
+            </aside>
+          </div>
+          <form class="ask" onsubmit="return false">
+            <button class="ibtn" type="button" aria-pressed="false" aria-label="Include screenshot" data-tip="Include screenshot  ⌘⇧S" data-tip-start id="shot"><svg class="ic" aria-hidden="true"><use href="#i-scan"/></svg></button>
+            <input type="text" placeholder="Ask anything" aria-label="Ask anything" autocomplete="off">
+            <kbd aria-label="Command Return">⌘ ↵</kbd>
+          </form>
+        </article>
+      </div>
+
+      <div class="stage bd-dark">
+        <article class="panel dark glass" id="ov-dark" aria-label="Sotto overlay, dark variant">
+          <header class="p-head">
+            <div class="p-title"><h3>Roadmap sync · Acme</h3><span class="chip">Sales discovery</span></div>
+            <span class="invisible"><svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg>Invisible</span>
+          </header>
+          <div class="convo">
+            <article class="line them q"><div class="meta"><time>14:03</time><b class="who">Them</b><span class="flag"><i class="tick"></i>Question detected</span></div><p>So how would you handle the migration if their API starts rate limiting us?</p></article>
+            <aside class="note" aria-label="Suggested answer">
+              <svg class="rule rw" aria-hidden="true"><line class="h" pathLength="1" x1="0" x2="28" y1="9" y2="9"/><line class="v" pathLength="1" x1="28" x2="28" y1="9" y2="100%"/></svg>
+              <svg class="rule rn" aria-hidden="true"><line class="v" pathLength="1" x1="1" x2="1" y1="0" y2="100%"/></svg>
+              <div class="slide">
+                <div class="note-head"><span class="label">Answer</span><span class="chip mono">answer 640 ms</span></div>
+                <p class="answer" data-stream>Queue the writes and drain them at the vendor's limit. Batch orders in groups of 500, retry with exponential backoff, and keep a dead-letter queue for anything that fails three times. Monday spikes then become a longer drain, not dropped orders.</p>
+                <div class="note-foot">
+                  <button class="ibtn" type="button" aria-label="Copy answer" data-tip="Copy answer  ⌘C" data-tip-start><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
+                  <button class="ibtn" type="button" aria-label="Dismiss answer" data-tip="Dismiss  Esc" data-tip-start><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+                </div>
+              </div>
+            </aside>
+          </div>
+          <form class="ask" onsubmit="return false">
+            <button class="ibtn" type="button" aria-pressed="true" aria-label="Include screenshot" data-tip="Include screenshot  ⌘⇧S" data-tip-start><svg class="ic" aria-hidden="true"><use href="#i-scan"/></svg></button>
+            <input type="text" placeholder="Ask anything" aria-label="Ask anything" autocomplete="off">
+            <kbd aria-label="Command Return">⌘ ↵</kbd>
+          </form>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 SETTINGS -->
+  <section class="screen" aria-labelledby="c3">
+    <h2 class="cap" id="c3"><span class="n">03</span>Settings, Models</h2>
+    <div class="stage win-stage bd-light">
+      <div class="win glass" role="group" aria-label="Settings window">
+        <div class="titlebar"><div class="lights" aria-hidden="true"><i></i><i></i><i></i></div><h2>Settings</h2></div>
+        <div class="win-body">
+          <nav class="side" aria-label="Settings sections">
+            <ul>
+              <li><button type="button"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg>General</button></li>
+              <li><button type="button" aria-current="page"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Models</button></li>
+              <li><button type="button"><svg class="ic" aria-hidden="true"><use href="#i-mic"/></svg>Transcription</button></li>
+              <li><button type="button"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg>Modes</button></li>
+              <li><button type="button"><svg class="ic" aria-hidden="true"><use href="#i-command"/></svg>Shortcuts</button></li>
+              <li><button type="button"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Privacy</button></li>
+              <li><button type="button"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Account</button></li>
+            </ul>
+          </nav>
+          <div class="content">
+            <h3>Models</h3>
+            <div class="form">
+              <section class="grp" aria-labelledby="p-anth">
+                <div class="grp-head"><h4 id="p-anth">Anthropic</h4><span class="status"><svg class="ic" aria-hidden="true"><use href="#i-circle-check"/></svg>Key saved</span></div>
+                <div class="frow"><span class="lbl">API key</span>
+                  <div class="ctl"><span class="key" aria-label="Saved key ending 4f2a">sk-ant-…4f2a</span>
+                    <button class="btn sm" type="button">Replace</button>
+                    <button class="btn sm" type="button" id="rm"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg>Remove</button></div></div>
+                <div class="frow"><label for="m-auto">Auto answers</label>
+                  <div class="ctl"><select class="field" id="m-auto"><option>Claude Haiku 5.5</option><option>Claude Sonnet 5.5</option></select></div></div>
+                <div class="frow"><label for="m-man">Manual asks</label>
+                  <div class="ctl"><select class="field" id="m-man"><option>Claude Sonnet 5.5</option><option>Claude Haiku 5.5</option></select></div></div>
+              </section>
+              <section class="grp" aria-labelledby="p-oai">
+                <div class="grp-head"><h4 id="p-oai">OpenAI</h4><span class="status"><svg class="ic" aria-hidden="true"><use href="#i-circle-dash"/></svg>Not configured</span></div>
+                <div class="frow"><span class="lbl">API key</span><div class="ctl"><button class="btn sm" type="button">Add key</button></div></div>
+              </section>
+              <section class="grp" aria-labelledby="p-oll">
+                <div class="grp-head"><h4 id="p-oll">Ollama</h4><span class="status"><span class="pulse" aria-hidden="true"></span>Running locally</span></div>
+                <div class="frow"><span class="lbl">Model</span><div class="ctl"><span class="key">qwen3:8b</span><span class="muted">Free, on this Mac</span></div></div>
+              </section>
+              <section class="grp" aria-labelledby="p-cap">
+                <div class="grp-head"><h4 id="p-cap">Spend</h4></div>
+                <div class="frow"><label for="cap">Auto-answer spend cap per session</label>
+                  <div class="ctl"><input class="field num" id="cap" value="$0.50" inputmode="decimal"></div></div>
+              </section>
+            </div>
+            <div class="actions"><button class="btn" type="button">Cancel</button><button class="btn primary" type="button">Save</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 ONBOARDING -->
+  <section class="screen" aria-labelledby="c4">
+    <h2 class="cap" id="c4"><span class="n">04</span>Onboarding, step 3 of 4</h2>
+    <div class="stage win-stage bd-light">
+      <div class="win glass" role="group" aria-label="Onboarding window" style="width:min(820px,100%)">
+        <div class="titlebar"><div class="lights" aria-hidden="true"><i></i><i></i><i></i></div><h2>Welcome to Sotto</h2></div>
+        <div class="ob">
+          <ol class="steps" aria-label="Progress">
+            <li class="done"><span class="dot"><svg class="ic" style="width:12px;height:12px" aria-hidden="true"><use href="#i-check"/></svg></span><span class="txt">Permissions</span><span class="sr-only">done</span></li>
+            <li class="done"><span class="dot"><svg class="ic" style="width:12px;height:12px" aria-hidden="true"><use href="#i-check"/></svg></span><span class="txt">Models</span><span class="sr-only">done</span></li>
+            <li aria-current="step"><span class="dot">3</span><span class="txt">Check transcription</span></li>
+            <li><span class="dot">4</span><span class="txt">Shortcuts</span></li>
+          </ol>
+          <h3>Check transcription</h3>
+          <p class="lede">Sotto ran the bundled test clips through each engine.</p>
+          <table class="tbl">
+            <caption class="sr-only">Transcription results for the bundled test clips</caption>
+            <thead><tr><th scope="col">Language</th><th scope="col" class="num">First words</th><th scope="col" class="num">Final text</th><th scope="col" class="num">Error rate</th></tr></thead>
+            <tbody>
+              <tr class="g"><th scope="colgroup" colspan="4">Apple Speech (on device)</th></tr>
+              <tr><th scope="row">Portuguese (Brazil)</th><td class="num">180 ms</td><td class="num">420 ms</td><td class="num">7.8%</td></tr>
+              <tr><th scope="row">English (US)</th><td class="num">150 ms</td><td class="num">390 ms</td><td class="num">5.1%</td></tr>
+              <tr class="g"><th scope="colgroup" colspan="4">Cloud (OpenAI)</th></tr>
+              <tr><td colspan="4" class="cloud">
+                <div class="cloudrow">
+                  <button class="switch" type="button" role="switch" aria-checked="false" aria-labelledby="cl-t" id="cloud"></button>
+                  <span id="cl-t">Off. Turn on to compare</span>
+                </div>
+                <p class="fine">Cloud sends meeting audio to OpenAI.</p>
+              </td></tr>
+            </tbody>
+          </table>
+          <div class="actions"><button class="btn" type="button"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg>Run again</button><button class="btn primary" type="button">Continue</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <h4 id="dlg-t">Remove Anthropic key?</h4>
+  <p>Auto answers and manual asks stop until you add a key.</p>
+  <div class="row"><button class="btn" type="button" id="dlg-cancel">Cancel</button><button class="btn primary" type="button" id="dlg-ok"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg>Remove key</button></div>
+</dialog>
+
+<script>
+(function () {
+  document.querySelectorAll('[data-stream]').forEach(function (el) {
+    var words = el.textContent.trim().split(/\s+/);
+    var tail = 5;
+    el.textContent = '';
+    words.forEach(function (w, i) {
+      var s = document.createElement('span');
+      s.className = 'w' + (i >= words.length - tail ? ' tail' : '');
+      if (i >= words.length - tail) s.style.setProperty('--t', i - (words.length - tail));
+      s.dataset.n = i;
+      s.textContent = w + (i < words.length - 1 ? ' ' : '');
+      el.appendChild(s);
+    });
+    el.querySelectorAll('.w').forEach(function (s) { s.style.setProperty('--i', s.dataset.n); });
+  });
+
+  function replay(sel) {
+    document.querySelectorAll(sel).forEach(function (el) {
+      el.classList.remove('enter');
+      void el.offsetWidth;
+      el.classList.add('enter');
+    });
+  }
+  document.querySelectorAll('[data-replay]').forEach(function (b) {
+    b.addEventListener('click', function () { replay(b.dataset.replay); });
+  });
+
+  var shot = document.getElementById('shot');
+  shot.addEventListener('click', function () {
+    shot.setAttribute('aria-pressed', shot.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+  });
+
+  var sw = document.getElementById('cloud'), swt = document.getElementById('cl-t');
+  sw.addEventListener('click', function () {
+    var on = sw.getAttribute('aria-checked') === 'true';
+    sw.setAttribute('aria-checked', on ? 'false' : 'true');
+    swt.textContent = on ? 'Off. Turn on to compare' : 'On. Included in the next run';
+  });
+
+  var dlg = document.getElementById('dlg'), rm = document.getElementById('rm');
+  rm.addEventListener('click', function () { dlg.showModal(); });
+  document.getElementById('dlg-cancel').addEventListener('click', function () { dlg.close(); });
+  document.getElementById('dlg-ok').addEventListener('click', function () { dlg.close(); });
+})();
+</script>
+</body>
+</html>

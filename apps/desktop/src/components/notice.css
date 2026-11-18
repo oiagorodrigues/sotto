@@ -1,0 +1,20 @@
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s2);
+  padding: var(--s2) var(--s3);
+  border-top: 1px solid var(--cue);
+  background: var(--g1);
+  color: var(--text);
+  font-size: var(--fs-xs);
+}
+.notice svg.i {
+  flex: none;
+  margin-top: 2px;
+  color: var(--cue);
+}
+.notice p {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

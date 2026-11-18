@@ -1,0 +1,95 @@
+.select-wrap {
+  position: relative;
+}
+.select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2);
+  cursor: pointer;
+  user-select: none;
+}
+.select .placeholder {
+  color: var(--text-2);
+}
+.select[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.select svg {
+  color: var(--text-2);
+}
+.listbox {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--g2);
+  border: 1px solid var(--line-control);
+  border-radius: var(--r-ctl);
+  box-shadow: var(--sh-3);
+  animation: pop var(--d-fast) var(--ease-out) both;
+}
+.listbox li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  padding: 0 var(--s2);
+  border-radius: 3px;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.listbox li[data-active] {
+  background: var(--g0);
+  box-shadow: inset 2px 0 0 var(--cue);
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.select-chip {
+  display: block;
+}
+.select-chip .select.input {
+  height: 22px;
+  width: auto;
+  max-width: 180px;
+  gap: 6px;
+  padding: 0 var(--s2);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--g0);
+  border-color: var(--line);
+}
+.select-chip .select.input:hover:not([aria-disabled="true"]) {
+  background: var(--g2);
+  color: var(--text);
+}
+.select-chip .select span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.select-chip .listbox {
+  right: auto;
+  min-width: 200px;
+  max-width: 280px;
+  max-height: 196px;
+  overflow-y: auto;
+}
+.select-chip .listbox li {
+  gap: var(--s2);
+}

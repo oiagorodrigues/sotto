@@ -1,0 +1,615 @@
+{
+ "note": "Synthetic fixtures written by hand to mimic SpeechTranscriber output (lowercase, mostly unpunctuated, some ASR errors). Not real meeting data; recalibrate with real transcripts.",
+ "cases": [
+  {
+   "id": "pt-01",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "como",
+    "como você",
+    "como você lidaria",
+    "como você lidaria com uma migração de banco",
+    "como você lidaria com uma migração de banco sem downtime"
+   ]
+  },
+  {
+   "id": "pt-02",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "por que",
+    "por que você",
+    "por que você escolheu",
+    "por que você escolheu usar kafka em vez de rabbitmq"
+   ]
+  },
+  {
+   "id": "pt-03",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "qual a",
+    "qual a diferença",
+    "qual a diferença entre",
+    "qual a diferença entre um processo e uma thread"
+   ]
+  },
+  {
+   "id": "pt-04",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "você",
+    "você poderia",
+    "você poderia explicar",
+    "você poderia explicar como funciona o garbage collector"
+   ]
+  },
+  {
+   "id": "pt-05",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "então eu vou",
+    "então eu vou lidar com a migração",
+    "então eu vou lidar com a migração se a api deles começar a limitar a gente"
+   ]
+  },
+  {
+   "id": "pt-06",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "me explica",
+    "me explica como vocês",
+    "me explica como vocês fazem o deploy hoje"
+   ]
+  },
+  {
+   "id": "pt-07",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "quanto",
+    "quanto custa",
+    "quanto custa o plano enterprise",
+    "quanto custa o plano enterprise para cinquenta usuários"
+   ]
+  },
+  {
+   "id": "pt-08",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "vocês têm",
+    "vocês têm integração",
+    "vocês têm integração com o salesforce",
+    "vocês têm integração com o salesforce né"
+   ]
+  },
+  {
+   "id": "pt-09",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "dá pra",
+    "dá pra mostrar",
+    "dá pra mostrar o dashboard de novo"
+   ]
+  },
+  {
+   "id": "pt-10",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "a gente tem três pontos",
+    "a gente tem três pontos hoje o primeiro é como",
+    "a gente tem três pontos hoje o primeiro é como vocês pensam em escalar o ingest"
+   ]
+  },
+  {
+   "id": "pt-11",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "e se",
+    "e se o cliente",
+    "e se o cliente cancelar no meio",
+    "e se o cliente cancelar no meio do contrato"
+   ]
+  },
+  {
+   "id": "pt-12",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "quando vocês",
+    "quando vocês conseguem entregar",
+    "quando vocês conseguem entregar essa feature"
+   ]
+  },
+  {
+   "id": "pt-13",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "e aí",
+    "e aí o que você",
+    "e aí o que você acha disso"
+   ]
+  },
+  {
+   "id": "pt-14",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "será que",
+    "será que a gente consegue",
+    "será que a gente consegue migrar até sexta"
+   ]
+  },
+  {
+   "id": "pt-15",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "descreve a",
+    "descreve a arquitetura do sistema",
+    "descreve a arquitetura do sistema que você construiu"
+   ]
+  },
+  {
+   "id": "pt-16",
+   "lang": "pt-BR",
+   "label": true,
+   "revisions": [
+    "ok antes de seguir",
+    "ok antes de seguir, qual",
+    "ok antes de seguir, qual o prazo",
+    "ok antes de seguir, qual o prazo que vocês tinham pensado"
+   ]
+  },
+  {
+   "id": "pt-17",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "eu não sei",
+    "eu não sei como isso",
+    "eu não sei como isso funcionou na época"
+   ]
+  },
+  {
+   "id": "pt-18",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "a gente decidiu",
+    "a gente decidiu migrar porque",
+    "a gente decidiu migrar porque o custo estava alto"
+   ]
+  },
+  {
+   "id": "pt-19",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "como eu",
+    "como eu disse antes",
+    "como eu disse antes o deploy sai na sexta"
+   ]
+  },
+  {
+   "id": "pt-20",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "ontem o time",
+    "ontem o time terminou a migração",
+    "ontem o time terminou a migração do banco e ficou tudo certo"
+   ]
+  },
+  {
+   "id": "pt-21",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "o cliente quer saber",
+    "o cliente quer saber quando a gente vai entregar",
+    "o cliente quer saber quando a gente vai entregar mas ainda não tenho data"
+   ]
+  },
+  {
+   "id": "pt-22",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "quanto ao",
+    "quanto ao prazo a gente",
+    "quanto ao prazo a gente fecha na sexta"
+   ]
+  },
+  {
+   "id": "pt-23",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "não sei por que",
+    "não sei por que o teste falhou",
+    "não sei por que o teste falhou mas vou investigar"
+   ]
+  },
+  {
+   "id": "pt-24",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "então a ideia",
+    "então a ideia é usar kafka",
+    "então a ideia é usar kafka para os eventos e redis para cache"
+   ]
+  },
+  {
+   "id": "pt-25",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "como funciona",
+    "como funciona o retry está",
+    "como funciona o retry está descrito no runbook"
+   ]
+  },
+  {
+   "id": "pt-26",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "obrigado pessoal",
+    "obrigado pessoal vamos encerrar",
+    "obrigado pessoal vamos encerrar por hoje"
+   ]
+  },
+  {
+   "id": "pt-27",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "se a api",
+    "se a api falhar",
+    "se a api falhar a gente tenta de novo com backoff"
+   ]
+  },
+  {
+   "id": "pt-28",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "o que eu",
+    "o que eu quero dizer",
+    "o que eu quero dizer é que precisamos de mais testes"
+   ]
+  },
+  {
+   "id": "pt-29",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "a reunião de ontem",
+    "a reunião de ontem foi boa",
+    "a reunião de ontem foi boa mas ficou faltando falar de custos"
+   ]
+  },
+  {
+   "id": "pt-30",
+   "lang": "pt-BR",
+   "label": false,
+   "revisions": [
+    "quando a api",
+    "quando a api falha a gente",
+    "quando a api falha a gente tenta de novo depois de um tempo"
+   ]
+  },
+  {
+   "id": "en-01",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "so how",
+    "so how would you",
+    "so how would you handle the migration",
+    "so how would you handle the migration if their api starts rate limiting us"
+   ]
+  },
+  {
+   "id": "en-02",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "so i will",
+    "so i will handle the migration",
+    "so i will handle the migration if their api starts rate limiting us"
+   ]
+  },
+  {
+   "id": "en-03",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "could you",
+    "could you walk me",
+    "could you walk me through your last project"
+   ]
+  },
+  {
+   "id": "en-04",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "what's the",
+    "what's the difference between",
+    "what's the difference between a mutex and a semaphore"
+   ]
+  },
+  {
+   "id": "en-05",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "why did",
+    "why did you leave",
+    "why did you leave your last job"
+   ]
+  },
+  {
+   "id": "en-06",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "can you",
+    "can you explain how",
+    "can you explain how the cache invalidation works"
+   ]
+  },
+  {
+   "id": "en-07",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "do you",
+    "do you support single",
+    "do you support single sign on for the enterprise plan"
+   ]
+  },
+  {
+   "id": "en-08",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "is there a",
+    "is there a way to",
+    "is there a way to export the data to csv"
+   ]
+  },
+  {
+   "id": "en-09",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "tell me",
+    "tell me about a time",
+    "tell me about a time you disagreed with your manager"
+   ]
+  },
+  {
+   "id": "en-10",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "describe the",
+    "describe the architecture of",
+    "describe the architecture of the system you built"
+   ]
+  },
+  {
+   "id": "en-11",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "okay and then",
+    "okay and then what happens",
+    "okay and then what happens when the primary node goes down"
+   ]
+  },
+  {
+   "id": "en-12",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "what happens",
+    "what happens if the queue",
+    "what happens if the queue backs up"
+   ]
+  },
+  {
+   "id": "en-13",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "so tell me",
+    "so tell me what you think",
+    "so tell me what you think about the rollout plan"
+   ]
+  },
+  {
+   "id": "en-14",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "walk me",
+    "walk me through",
+    "walk me through the pricing tiers"
+   ]
+  },
+  {
+   "id": "en-15",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "you already",
+    "you already have an sso",
+    "you already have an sso integration right"
+   ]
+  },
+  {
+   "id": "en-16",
+   "lang": "en",
+   "label": true,
+   "revisions": [
+    "um before we move on",
+    "um before we move on, where",
+    "um before we move on, where are we on the budget"
+   ]
+  },
+  {
+   "id": "en-17",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "that's how",
+    "that's how we did",
+    "that's how we did it at my last company"
+   ]
+  },
+  {
+   "id": "en-18",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "what a",
+    "what a week",
+    "what a week it has been"
+   ]
+  },
+  {
+   "id": "en-19",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "i don't know",
+    "i don't know why the",
+    "i don't know why the build failed yet"
+   ]
+  },
+  {
+   "id": "en-20",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "we decided",
+    "we decided to move to postgres",
+    "we decided to move to postgres because the costs were too high"
+   ]
+  },
+  {
+   "id": "en-21",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "so the plan",
+    "so the plan is to ship",
+    "so the plan is to ship on friday and then do the migration next week"
+   ]
+  },
+  {
+   "id": "en-22",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "i think",
+    "i think that's",
+    "i think that's right"
+   ]
+  },
+  {
+   "id": "en-23",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "thanks everyone",
+    "thanks everyone let's wrap",
+    "thanks everyone let's wrap up for today"
+   ]
+  },
+  {
+   "id": "en-24",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "when the api",
+    "when the api fails we",
+    "when the api fails we retry with exponential backoff"
+   ]
+  },
+  {
+   "id": "en-25",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "if the api",
+    "if the api starts failing",
+    "if the api starts failing we will switch to the backup"
+   ]
+  },
+  {
+   "id": "en-26",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "what i mean",
+    "what i mean is we",
+    "what i mean is we need more tests"
+   ]
+  },
+  {
+   "id": "en-27",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "the customer asked",
+    "the customer asked how much",
+    "the customer asked how much it would cost but i don't have a number"
+   ]
+  },
+  {
+   "id": "en-28",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "which means",
+    "which means we need to",
+    "which means we need to scale the ingest layer"
+   ]
+  },
+  {
+   "id": "en-29",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "how we handle",
+    "how we handle retries is",
+    "how we handle retries is in the runbook"
+   ]
+  },
+  {
+   "id": "en-30",
+   "lang": "en",
+   "label": false,
+   "revisions": [
+    "he explained",
+    "he explained the architecture",
+    "he explained the architecture last week and it made sense"
+   ]
+  }
+ ]
+}

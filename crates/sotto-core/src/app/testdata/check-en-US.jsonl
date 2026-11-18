@@ -1,0 +1,35 @@
+{"at_ms":1072,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":1,"start_ms":0,"end_ms":1080,"text":"We","is_final":false}}
+{"at_ms":1072,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":2,"start_ms":0,"end_ms":1080,"text":"We try","is_final":false}}
+{"at_ms":2032,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":3,"start_ms":0,"end_ms":2040,"text":"We try to","is_final":false}}
+{"at_ms":2032,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":4,"start_ms":0,"end_ms":2040,"text":"We try to v","is_final":false}}
+{"at_ms":2032,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":5,"start_ms":0,"end_ms":2040,"text":"We try to vend","is_final":false}}
+{"at_ms":2032,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":6,"start_ms":0,"end_ms":2040,"text":"We try to vendors","is_final":false}}
+{"at_ms":2032,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":7,"start_ms":0,"end_ms":2040,"text":"We try to vendors last","is_final":false}}
+{"at_ms":2991,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":8,"start_ms":0,"end_ms":3000,"text":"We try to vendors last year","is_final":false}}
+{"at_ms":2991,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":9,"start_ms":0,"end_ms":3000,"text":"We try to vendors last year and","is_final":false}}
+{"at_ms":2991,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":10,"start_ms":0,"end_ms":3000,"text":"We try to vendors last year and both","is_final":false}}
+{"at_ms":2991,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":11,"start_ms":0,"end_ms":3000,"text":"We try to vendors last year and both broke","is_final":false}}
+{"at_ms":3952,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":12,"start_ms":0,"end_ms":3960,"text":"We try to vendors last year and both broke under","is_final":false}}
+{"at_ms":3953,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":13,"start_ms":0,"end_ms":3960,"text":"We try to vendors last year and both broke under load","is_final":false}}
+{"at_ms":4911,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":14,"start_ms":0,"end_ms":4920,"text":"We try to vendors last year and both broke under load.","is_final":false}}
+{"at_ms":5000,"event":{"type":"transcript","speaker":"them","segment_id":1,"revision":15,"start_ms":0,"end_ms":3960,"text":"We tried to vendors last year and both broke under load.","is_final":true}}
+{"at_ms":5000,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":1,"start_ms":3960,"end_ms":5000,"text":"So","is_final":false}}
+{"at_ms":5000,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":2,"start_ms":3960,"end_ms":5000,"text":"So I","is_final":false}}
+{"at_ms":5000,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":3,"start_ms":3960,"end_ms":5000,"text":"So I will","is_final":false}}
+{"at_ms":5872,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":4,"start_ms":3960,"end_ms":5880,"text":"So I will hand","is_final":false}}
+{"at_ms":5872,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":5,"start_ms":3960,"end_ms":5880,"text":"So I will handle","is_final":false}}
+{"at_ms":5872,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":6,"start_ms":3960,"end_ms":5880,"text":"So I will handle the","is_final":false}}
+{"at_ms":5872,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":7,"start_ms":3960,"end_ms":5880,"text":"So I will handle the m","is_final":false}}
+{"at_ms":5872,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":8,"start_ms":3960,"end_ms":5880,"text":"So I will handle the mig","is_final":false}}
+{"at_ms":6831,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":9,"start_ms":3960,"end_ms":6840,"text":"So I will handle the migration if","is_final":false}}
+{"at_ms":6832,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":10,"start_ms":3960,"end_ms":6840,"text":"So I will handle the migration if their","is_final":false}}
+{"at_ms":7788,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":11,"start_ms":3960,"end_ms":7800,"text":"So I will handle the migration if their service","is_final":false}}
+{"at_ms":7788,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":12,"start_ms":3960,"end_ms":7800,"text":"So I will handle the migration if their service starts","is_final":false}}
+{"at_ms":7789,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":13,"start_ms":3960,"end_ms":7800,"text":"So I will handle the migration if their service starts li","is_final":false}}
+{"at_ms":7789,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":14,"start_ms":3960,"end_ms":7800,"text":"So I will handle the migration if their service starts limit","is_final":false}}
+{"at_ms":7789,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":15,"start_ms":3960,"end_ms":7800,"text":"So I will handle the migration if their service starts limiting","is_final":false}}
+{"at_ms":8752,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":16,"start_ms":3960,"end_ms":8760,"text":"So I will handle the migration if their service starts limiting our","is_final":false}}
+{"at_ms":8752,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":17,"start_ms":3960,"end_ms":8760,"text":"So I will handle the migration if their service starts limiting our request","is_final":false}}
+{"at_ms":8752,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":18,"start_ms":3960,"end_ms":8760,"text":"So I will handle the migration if their service starts limiting our requests","is_final":false}}
+{"at_ms":8903,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":19,"start_ms":3960,"end_ms":8890,"text":"So I will handle the migration if their service starts limiting our requests.","is_final":false}}
+{"at_ms":8964,"event":{"type":"transcript","speaker":"them","segment_id":2,"revision":20,"start_ms":3960,"end_ms":8760,"text":"So I will handle the migration, if their service starts limiting our requests.","is_final":true}}

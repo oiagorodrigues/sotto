@@ -1,0 +1,44 @@
+.tooltip {
+  position: fixed;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  max-width: 240px;
+  padding: 5px var(--s2);
+  border-radius: var(--r-ctl);
+  border: 1px solid var(--line);
+  background: var(--g2);
+  color: var(--text);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  box-shadow: var(--sh-2);
+  pointer-events: none;
+  animation: tip var(--d-fast) var(--ease-out) both;
+}
+@keyframes tip {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tooltip[data-below] {
+  animation-name: tip-below;
+}
+@keyframes tip-below {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tooltip kbd {
+  background: var(--g0);
+}

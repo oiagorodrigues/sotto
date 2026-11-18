@@ -1,0 +1,56 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  padding: var(--s4);
+  background: rgba(10, 10, 11, 0.62);
+  animation: fade var(--d-ui) var(--ease-out) both;
+}
+.dialog {
+  width: min(420px, 100%);
+  background: var(--g1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  box-shadow: var(--sh-3);
+  animation: rise var(--d-ui) var(--ease-out) both;
+}
+.dialog h2 {
+  padding: var(--s4) var(--s4) 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.dialog-body {
+  padding: var(--s3) var(--s4) var(--s4);
+  display: grid;
+  gap: var(--s3);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.dialog-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s2);
+  padding: var(--s3) var(--s4);
+  border-top: 1px solid var(--line);
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

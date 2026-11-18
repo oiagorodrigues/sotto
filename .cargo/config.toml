@@ -1,0 +1,6 @@
+[env]
+TS_RS_EXPORT_DIR = { value = "apps/desktop/src/generated", relative = true }
+
+# Signs the desktop binary with the local dev identity before running it (scripts/dev-signing-setup.sh).
+[target.aarch64-apple-darwin]
+runner = "scripts/cargo-run-signed.sh"

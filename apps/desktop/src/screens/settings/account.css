@@ -1,0 +1,6 @@
+.acct {
+  max-width: 480px;
+}
+.acct-synced {
+  font-size: var(--fs-sm);
+}

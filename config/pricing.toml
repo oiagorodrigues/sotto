@@ -1,0 +1,45 @@
+# USD per million tokens. Prices from the provider docs cached on the date below.
+as_of = "2026-10-06"
+
+# Cache writes use the 5-minute TTL multiplier (1.25x input).
+#
+# A model with no entry here, or with a zero input or output price, cannot be costed, so the
+# spend cap cannot bound it: automatic answers and the classifier refuse to run on it (manual
+# asks still work). Add prices in `<app data dir>/pricing.toml`, same format; its entries
+# replace these per model and are read at start. OpenAI prices (gpt-4o, gpt-5, gpt-5-mini) are
+# not listed because no dated source for them was available.
+
+[models."claude-haiku-5-5"]
+input = 0.10
+output = 0.50
+# ESTIMATED: 10% of input. The docs cached on as_of did not list a Haiku 5.5 cache-read price.
+cache_read = 0.01
+cache_write = 0.125
+
+[models."claude-sonnet-5-5"]
+input = 2.00
+output = 10.00
+cache_read = 0.20
+cache_write = 2.50
+
+[models."claude-opus-5-5"]
+input = 4.00
+output = 20.00
+cache_read = 0.20
+cache_write = 5.00
+
+# Ollama runs locally and has no per-token price; it is exempt from the price check.
+[models."ollama"]
+input = 0.0
+output = 0.0
+cache_read = 0.0
+cache_write = 0.0
+
+# Streaming transcription is billed per minute of audio sent, per connection (one for the
+# microphone and one for the other participants). Listed at $0.017 per minute of realtime audio
+# on https://developers.openai.com/api/docs/models/gpt-live-transcribe and on
+# https://developers.openai.com/api/docs/pricing (checked 2026-11-06; neither page states a
+# publication date). The core sends only audio that passes its voice gate, so silence is not billed.
+[transcription."gpt-live-transcribe"]
+usd_per_minute = 0.017
+as_of = "2026-11-06"

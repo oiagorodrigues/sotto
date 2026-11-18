@@ -1,0 +1,49 @@
+.cal-events {
+  margin-top: var(--s3);
+}
+.cal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cal-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  font-size: var(--fs-sm);
+  border-top: 1px solid var(--line);
+}
+.cal-list li:first-child {
+  border-top: 0;
+}
+.cal-list time {
+  width: 44px;
+  flex: none;
+  color: var(--text-2);
+}
+.cal-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cal-video {
+  display: grid;
+  color: var(--text-2);
+}
+.cal-empty {
+  padding: var(--s4);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.cal-form {
+  display: grid;
+  gap: var(--s3);
+}
+@container win (min-width: 900px) {
+  .mods:has(+ .cal-events) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

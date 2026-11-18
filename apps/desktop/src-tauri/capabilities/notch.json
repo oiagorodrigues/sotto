@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "notch",
+  "description": "Notch overlay: receives snapshots, sends intents, reports its content size.",
+  "windows": [
+    "notch"
+  ],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "allow-dispatch",
+    "allow-current-snapshot",
+    "allow-report-notch-size"
+  ]
+}

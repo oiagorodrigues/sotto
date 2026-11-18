@@ -1,0 +1,8 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.5/schema.json",
+  "files": { "includes": ["**", "!dist", "!src/generated", "!src-tauri", "!node_modules"] },
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
+  "linter": { "enabled": true, "rules": { "preset": "recommended" } },
+  "css": { "formatter": { "enabled": true } },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } }
+}

@@ -1,0 +1,17 @@
+{
+  "generator": "macOS say, converted with afconvert -f WAVE -d LEI16@16000 -c 1",
+  "clips": [
+    {
+      "locale": "pt-BR",
+      "file": "pt-BR-question.wav",
+      "voice": "Luciana (Enhanced)",
+      "text": "Nós testamos dois fornecedores no ano passado e os dois quebraram com a carga. Então, como você faria a migração se o serviço deles começar a limitar as nossas requisições?"
+    },
+    {
+      "locale": "en-US",
+      "file": "en-US-question.wav",
+      "voice": "Eddy (English (US))",
+      "text": "We tried two vendors last year and both broke under load. So how would you handle the migration if their service starts limiting our requests?"
+    }
+  ]
+}
