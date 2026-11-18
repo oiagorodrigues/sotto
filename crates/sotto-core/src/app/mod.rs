@@ -36,7 +36,7 @@ pub use self::models::{
 pub use self::settings::{LocalModels, OllamaCatalog};
 use crate::account::{self, AccountConfig, AccountHandle};
 use crate::calendar::{self as calendar_service, CalendarConfig};
-use crate::cloud_stt::{ByokOpenAi, PcmFrame};
+use crate::cloud_stt::{ByokOpenAi, CloudCredentials, FirstAvailable, HostedOpenAi, PcmFrame};
 use crate::pricing::{self as pricing_table, PriceTable};
 use crate::providers::Effort;
 use crate::secrets::{CachedStore, SecretStore};
@@ -328,7 +328,10 @@ impl App {
         let secrets: Arc<dyn SecretStore> = Arc::new(CachedStore::new(config.secrets));
         let calendar = calendar_service::spawn(config.calendar, Arc::clone(&secrets));
         let (account, account_applies) = account::spawn(config.account, Arc::clone(&secrets));
-        let cloud_credentials = Arc::new(ByokOpenAi::new(Arc::clone(&secrets)));
+        let cloud_credentials: Arc<dyn CloudCredentials> = Arc::new(FirstAvailable::new(vec![
+            Arc::new(ByokOpenAi::new(Arc::clone(&secrets))),
+            Arc::new(HostedOpenAi::new(account.clone())),
+        ]));
         let secret_jobs = settings::spawn_secret_worker(Arc::clone(&secrets), bg_tx.clone());
         let onboarding = onboarding::Onboarding::new(
             onboarding::Parts {

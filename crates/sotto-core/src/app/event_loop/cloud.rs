@@ -39,13 +39,13 @@ impl Core {
     }
 
     /// Whether a session may start on the chosen engine. Cloud is never a fallback: it runs
-    /// only when the user chose it, and only with a key to use.
+    /// only when the user chose it, and only with an OpenAI key or a signed-in account to use.
     pub(super) fn cloud_precheck(&mut self) -> bool {
         let cloud = self.settings.engine_preference == EnginePreference::Cloud;
-        if cloud && self.providers.openai_mask.is_none() {
+        if cloud && self.providers.openai_mask.is_none() && !self.signed_in() {
             self.notice(
                 NoticeKind::Cloud,
-                "Cloud transcription is on but no OpenAI key is saved. Add one in Settings > Models, or switch back to on-device transcription in Settings > Transcription",
+                "Cloud transcription is on but there is no OpenAI key and you are not signed in. Add a key in Settings > Models, sign in in Settings > Account, or switch back to on-device transcription in Settings > Transcription",
             );
             return false;
         }

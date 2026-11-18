@@ -2,7 +2,9 @@
 //! settings that sync, applies settings another device changed, and mirrors the task's state into
 //! the snapshot.
 
-use sotto_protocol::ui::{AccountView, MAX_SPEND_CAP_MICRO_USD, is_bcp47_tag, is_known_model};
+use sotto_protocol::ui::{
+    AccountState, AccountView, MAX_SPEND_CAP_MICRO_USD, is_bcp47_tag, is_known_model,
+};
 use tokio::sync::watch;
 
 use super::{Core, settings, unix_ms};
@@ -92,6 +94,7 @@ impl Core {
             locale: self.providers.locale(&self.settings),
             auto_answer: self.settings.auto_answer,
             invisible: self.snap.invisible,
+            modes: self.modes.sync_list(unix_ms()),
         }
     }
 
@@ -103,9 +106,19 @@ impl Core {
     pub(super) fn refresh_account(&mut self) {
         let view = self.account.view();
         if view != self.snap.account {
+            let sign_in_changed = (view.state == AccountState::SignedIn)
+                != (self.snap.account.state == AccountState::SignedIn);
             self.snap.account = view;
             self.dirty = true;
+            if sign_in_changed {
+                self.refresh_settings_view();
+            }
         }
+    }
+
+    /// A signed-in account can get a hosted cloud transcription token.
+    pub(super) fn signed_in(&self) -> bool {
+        self.account.view().state == AccountState::SignedIn
     }
 
     pub(super) fn on_account(&mut self, event: AccountEvent) {
@@ -166,6 +179,8 @@ impl Core {
             self.store.set_setting(key, value, now);
         }
         self.snap.invisible = remote.invisible;
+        self.modes.apply_remote(&remote.modes);
+        self.sync_modes();
         self.refresh_settings_view();
     }
 }

@@ -30,6 +30,7 @@ fn local(cap: u64) -> LocalSettings {
         locale: "en-US".into(),
         auto_answer: true,
         invisible: true,
+        modes: Vec::new(),
     }
 }
 

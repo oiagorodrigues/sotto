@@ -136,7 +136,14 @@ function Metric({
 }
 
 /** What to do when the on-device engine could not be measured. */
-export function CheckAdvice({ check }: { check: TranscriptionCheckView }) {
+export function CheckAdvice({
+  check,
+  onOpenSettings,
+}: {
+  check: TranscriptionCheckView;
+  /** Given in onboarding, where the Transcription page is in another window. */
+  onOpenSettings?: () => void;
+}) {
   const problem = check.status === "failed" || check.results.some((r) => r.outcome !== "measured");
   if (check.status === "running" || !problem) return null;
   return (
@@ -144,6 +151,11 @@ export function CheckAdvice({ check }: { check: TranscriptionCheckView }) {
       <Icon name="info" size={14} />
       {check.error ? `${check.error}. ` : ""}Cloud transcription can be turned on in Settings &gt;
       Transcription.
+      {onOpenSettings ? (
+        <button type="button" className="btn" onClick={onOpenSettings}>
+          Open Settings
+        </button>
+      ) : null}
     </p>
   );
 }

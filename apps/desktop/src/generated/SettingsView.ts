@@ -21,6 +21,7 @@ available_locales: Array<string>,
  */
 engine_preference: EnginePreference, 
 /**
- * Credentials for cloud transcription exist (an OpenAI key in the Keychain).
+ * Credentials for cloud transcription exist: an OpenAI key in the Keychain, or a signed-in
+ * Sotto account that can get a hosted token.
  */
 cloud_transcription_available: boolean, };

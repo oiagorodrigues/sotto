@@ -19,7 +19,7 @@ export function CheckTranscription({
   return (
     <>
       <CheckResults check={check} />
-      <CheckAdvice check={check} />
+      <CheckAdvice check={check} onOpenSettings={() => void dispatch({ type: "open_settings" })} />
       <StepFooter onBack={onBack}>
         <button
           type="button"

@@ -18,7 +18,9 @@ use super::mode_index::{IDENTITY_KEY, IndexJob, identity};
 use super::settings::BgMsg;
 use super::store::StoreAccess;
 use super::{Notice, NoticeKind};
-use crate::storage::{Db, ModeOverview};
+use crate::account::{LocalMode, TOMBSTONE_TTL_MS};
+use crate::storage::{Db, ModeOverview, ModeSyncRow};
+use sotto_protocol::ui::{MAX_MODE_NAME_CHARS, MAX_MODE_PROMPT_CHARS};
 
 pub(crate) const MAX_MODES: usize = 50;
 const KEY_SELECTED: &str = "selected_mode";
@@ -55,6 +57,7 @@ pub(crate) enum ModesMsg {
 #[derive(Debug)]
 pub(crate) struct SavedModes {
     overview: Vec<ModeOverview>,
+    sync_rows: Vec<ModeSyncRow>,
     selected: Option<Uuid>,
     stored_identity: Option<serde_json::Value>,
 }
@@ -62,6 +65,7 @@ pub(crate) struct SavedModes {
 impl SavedModes {
     pub fn read(db: &Db) -> Option<Self> {
         let overview = db.modes_overview().ok()?;
+        let sync_rows = db.modes_for_sync().ok()?;
         let selected = db
             .get_setting(KEY_SELECTED)
             .ok()?
@@ -70,6 +74,7 @@ impl SavedModes {
         let stored_identity = db.get_setting(IDENTITY_KEY).ok()?;
         Some(Self {
             overview,
+            sync_rows,
             selected,
             stored_identity,
         })
@@ -98,6 +103,16 @@ struct Mode {
     name: String,
     prompt: String,
     files: Vec<ModeFile>,
+    /// Milliseconds since the epoch of the last edit, for preference sync.
+    updated_ms: i64,
+}
+
+/// A deleted mode, kept so the deletion can reach other devices.
+#[derive(Debug, Clone)]
+struct Tombstone {
+    id: Uuid,
+    name: String,
+    updated_ms: i64,
 }
 
 impl Mode {
@@ -167,6 +182,7 @@ pub(crate) struct ModesState {
     notes: Arc<NoticeOnce>,
     bg: mpsc::UnboundedSender<BgMsg>,
     modes: Vec<Mode>,
+    tombstones: Vec<Tombstone>,
     selected: Option<Uuid>,
     /// Stored vectors come from another embedding model and are dropped before the next job.
     stale_index: bool,
@@ -191,6 +207,7 @@ impl ModesState {
             notices,
             bg,
             modes: Vec::new(),
+            tombstones: Vec::new(),
             selected: None,
             stale_index: false,
             running: None,
@@ -352,15 +369,17 @@ impl ModesState {
             return;
         }
         let id = Uuid::now_v7();
+        let now = unix_ms();
         self.modes.push(Mode {
             id,
             name: name.to_string(),
             prompt: prompt.to_string(),
             files: Vec::new(),
+            updated_ms: now,
         });
         let (name, prompt) = (name.to_string(), prompt.to_string());
         self.access
-            .write(move |db| db.create_mode_with_id(id, &name, &prompt, unix_ms()));
+            .write(move |db| db.create_mode_with_id(id, &name, &prompt, now));
         self.changed = true;
     }
 
@@ -368,27 +387,123 @@ impl ModesState {
         let Some(mode) = self.find_mut(id) else {
             return;
         };
+        let now = unix_ms();
         mode.name = name.to_string();
         mode.prompt = prompt.to_string();
+        mode.updated_ms = now;
         let (name, prompt) = (name.to_string(), prompt.to_string());
         self.access
-            .write(move |db| db.update_mode(id, &name, &prompt, unix_ms()));
+            .write(move |db| db.update_mode(id, &name, &prompt, now));
         self.refresh_active(id);
         self.changed = true;
     }
 
     fn delete(&mut self, id: Uuid) {
-        let before = self.modes.len();
-        self.modes.retain(|m| m.id != id);
-        if self.modes.len() == before {
+        self.delete_at(id, unix_ms());
+    }
+
+    fn delete_at(&mut self, id: Uuid, at_ms: i64) {
+        let Some(mode) = self.modes.iter().find(|m| m.id == id) else {
             return;
-        }
+        };
+        self.tombstones.retain(|t| t.id != id);
+        self.tombstones.push(Tombstone {
+            id,
+            name: mode.name.clone(),
+            updated_ms: at_ms,
+        });
+        self.modes.retain(|m| m.id != id);
         self.cancel_job_for(id);
         if self.selected == Some(id) {
             self.select(None);
         }
-        self.access.write(move |db| db.delete_mode(id, unix_ms()));
+        self.access.write(move |db| db.delete_mode(id, at_ms));
         self.changed = true;
+    }
+
+    // ---- preference sync ----
+
+    /// Names and system prompts for the account task, tombstones included. Files never leave
+    /// the device.
+    pub fn sync_list(&self, now_ms: i64) -> Vec<LocalMode> {
+        let live = self.modes.iter().map(|m| LocalMode {
+            id: m.id.to_string(),
+            name: m.name.clone(),
+            system_prompt: m.prompt.clone(),
+            updated_ms: m.updated_ms,
+            deleted: false,
+        });
+        let gone = self
+            .tombstones
+            .iter()
+            .filter(|t| now_ms - t.updated_ms < TOMBSTONE_TTL_MS)
+            .map(|t| LocalMode {
+                id: t.id.to_string(),
+                name: t.name.clone(),
+                system_prompt: String::new(),
+                updated_ms: t.updated_ms,
+                deleted: true,
+            });
+        let mut all: Vec<LocalMode> = live.chain(gone).collect();
+        all.sort_by(|a, b| a.id.cmp(&b.id));
+        all
+    }
+
+    /// Applies modes another device changed. The newer edit of each id wins; a document from the
+    /// server is checked like the matching intents, so it cannot create a mode the modes page
+    /// could not.
+    pub fn apply_remote(&mut self, remote: &[LocalMode]) {
+        for r in remote {
+            let Ok(id) = r.id.parse::<Uuid>() else {
+                continue;
+            };
+            let local = self.find(id).map(|m| m.updated_ms);
+            if r.deleted {
+                if local.is_some_and(|t| r.updated_ms > t) {
+                    self.delete_at(id, r.updated_ms);
+                }
+                continue;
+            }
+            let valid = !r.name.trim().is_empty()
+                && r.name.chars().count() <= MAX_MODE_NAME_CHARS
+                && !r.name.chars().any(char::is_control)
+                && r.system_prompt.chars().count() <= MAX_MODE_PROMPT_CHARS;
+            if !valid {
+                continue;
+            }
+            match local {
+                Some(t) if r.updated_ms <= t => continue,
+                Some(_) => {
+                    if let Some(mode) = self.find_mut(id) {
+                        mode.name.clone_from(&r.name);
+                        mode.prompt.clone_from(&r.system_prompt);
+                        mode.updated_ms = r.updated_ms;
+                    }
+                    self.refresh_active(id);
+                }
+                None => {
+                    let deleted_later = self
+                        .tombstones
+                        .iter()
+                        .any(|t| t.id == id && t.updated_ms >= r.updated_ms);
+                    if deleted_later || self.modes.len() >= MAX_MODES {
+                        continue;
+                    }
+                    self.tombstones.retain(|t| t.id != id);
+                    self.modes.push(Mode {
+                        id,
+                        name: r.name.clone(),
+                        prompt: r.system_prompt.clone(),
+                        files: Vec::new(),
+                        updated_ms: r.updated_ms,
+                    });
+                }
+            }
+            let (name, prompt, at) = (r.name.clone(), r.system_prompt.clone(), r.updated_ms);
+            self.access
+                .write(move |db| db.upsert_synced_mode(id, &name, &prompt, at));
+            self.changed = true;
+        }
     }
 
     fn select(&mut self, id: Option<Uuid>) {
@@ -495,6 +610,7 @@ impl ModesState {
     fn apply_saved(&mut self, saved: SavedModes) {
         let SavedModes {
             overview,
+            sync_rows,
             selected,
             stored_identity,
         } = saved;
@@ -502,9 +618,25 @@ impl ModesState {
         let current_identity = identity(self.embedder.as_ref());
         self.stale_index = any_chunks && stored_identity.as_ref() != Some(&current_identity);
         let stale = self.stale_index;
+        let updated_of = |id: Uuid| {
+            sync_rows
+                .iter()
+                .find(|r| r.id == id)
+                .map_or(0, |r| r.updated_ms)
+        };
+        self.tombstones = sync_rows
+            .iter()
+            .filter(|r| r.deleted)
+            .map(|r| Tombstone {
+                id: r.id,
+                name: r.name.clone(),
+                updated_ms: r.updated_ms,
+            })
+            .collect();
         self.modes = overview
             .into_iter()
             .map(|o| Mode {
+                updated_ms: updated_of(o.mode.id),
                 id: o.mode.id,
                 name: o.mode.name,
                 prompt: o.mode.system_prompt,

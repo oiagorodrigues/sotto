@@ -365,3 +365,197 @@ async fn the_cloud_accepts_a_language_the_device_lacks_and_local_does_not() {
     h.wait(|s| s.settings.locale == "fr-FR").await;
     drop(sc);
 }
+
+async fn until_connected(server: &FakeRealtime, connections: usize) {
+    for _ in 0..250 {
+        if server.recorded().connections >= connections {
+            return;
+        }
+        tokio::time::sleep(Duration::from_millis(20)).await;
+    }
+    panic!("the engine did not connect");
+}
+
+async fn mount_hosted_token(server: &wiremock::MockServer, token: &str, fake: bool) {
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, ResponseTemplate};
+    let at = time::OffsetDateTime::now_utc() + time::Duration::minutes(10);
+    Mock::given(method("POST"))
+        .and(path("/v1/realtime-tokens"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+            "provider": "openai",
+            "token": token,
+            "expires_at": at.format(&time::format_description::well_known::Rfc3339).unwrap(),
+            "fake": fake,
+        })))
+        .mount(server)
+        .await;
+}
+
+async fn signed_in_harness(
+    backend: &wiremock::MockServer,
+    cloud_url: &str,
+) -> (Harness, Arc<FakeBrowser>) {
+    mount_signed_in_backend(
+        backend,
+        serde_json::json!({"version": 0, "preferences": null, "updated_at": null}),
+    )
+    .await;
+    let browser = Arc::new(FakeBrowser::default());
+    let h = harness(Opts {
+        account: Some(account_config(backend, &browser)),
+        refresh_token: Some("r1"),
+        ..cloud_opts(cloud_url)
+    });
+    (h, browser)
+}
+
+#[tokio::test]
+async fn a_signed_in_user_without_a_key_can_choose_cloud_and_gets_the_hosted_token() {
+    let backend = wiremock::MockServer::start().await;
+    mount_hosted_token(&backend, "ek_hosted_token", false).await;
+    let server = FakeRealtime::start(FakeConfig::default()).await;
+    let (mut h, _browser) = signed_in_harness(&backend, &server.url).await;
+
+    let s = h.wait(|s| s.settings.cloud_transcription_available).await;
+    assert!(
+        s.settings
+            .providers
+            .iter()
+            .all(|p| p.provider != ProviderId::Openai || !p.configured),
+        "no own key"
+    );
+    // The opt-in is still explicit: signing in does not switch the engine.
+    assert_eq!(s.settings.engine_preference, EnginePreference::Local);
+
+    h.app
+        .dispatch(Intent::SetEnginePreference {
+            engine: EnginePreference::Cloud,
+        })
+        .unwrap();
+    h.wait(|s| s.settings.engine_preference == EnginePreference::Cloud)
+        .await;
+    let _sc = start_cloud_session(&mut h).await;
+    until_connected(&server, 2).await;
+    let rec = server.recorded();
+    assert!(
+        rec.auth_headers
+            .iter()
+            .all(|a| a == "Bearer ek_hosted_token")
+    );
+}
+
+#[tokio::test]
+async fn an_own_key_is_used_before_the_hosted_token() {
+    let backend = wiremock::MockServer::start().await;
+    mount_hosted_token(&backend, "ek_hosted_token", false).await;
+    let server = FakeRealtime::start(FakeConfig::default()).await;
+    let (mut h, _browser) = signed_in_harness(&backend, &server.url).await;
+    opt_in_to_cloud(&mut h).await;
+    // Being signed in already makes cloud available, so wait for the key itself.
+    h.wait(|s| {
+        s.settings
+            .providers
+            .iter()
+            .any(|p| p.provider == ProviderId::Openai && p.configured)
+    })
+    .await;
+    let _sc = start_cloud_session(&mut h).await;
+    until_connected(&server, 2).await;
+    assert!(
+        server
+            .recorded()
+            .auth_headers
+            .iter()
+            .all(|a| a == &format!("Bearer {OPENAI_KEY}"))
+    );
+    let asked = backend.received_requests().await.unwrap_or_default();
+    assert!(asked.iter().all(|r| r.url.path() != "/v1/realtime-tokens"));
+}
+
+#[tokio::test]
+async fn a_fake_hosted_token_never_reaches_the_provider() {
+    let backend = wiremock::MockServer::start().await;
+    mount_hosted_token(&backend, "fake_dev_token", true).await;
+    let server = FakeRealtime::start(FakeConfig::default()).await;
+    let (mut h, _browser) = signed_in_harness(&backend, &server.url).await;
+    h.wait(|s| s.settings.cloud_transcription_available).await;
+    h.app
+        .dispatch(Intent::SetEnginePreference {
+            engine: EnginePreference::Cloud,
+        })
+        .unwrap();
+    h.wait(|s| s.settings.engine_preference == EnginePreference::Cloud)
+        .await;
+    let _sc = start_cloud_session(&mut h).await;
+    let s = h.wait(|s| s.engine == EngineView::Unavailable).await;
+    let notice = s.notice.unwrap();
+    assert!(
+        notice.contains("development transcription provider"),
+        "{notice}"
+    );
+    assert!(!notice.contains("fake_dev_token"));
+    assert_eq!(server.recorded().connections, 0);
+}
+
+#[tokio::test]
+async fn signed_out_without_a_key_cloud_does_not_start() {
+    let mut h = harness(Opts::default());
+    h.app
+        .dispatch(Intent::SetEnginePreference {
+            engine: EnginePreference::Cloud,
+        })
+        .unwrap();
+    h.wait(|s| s.settings.engine_preference == EnginePreference::Cloud)
+        .await;
+    h.app
+        .dispatch(Intent::StartSession { mode_id: None })
+        .unwrap();
+    let notice = h.wait(|s| s.notice.is_some()).await.notice.unwrap();
+    assert!(notice.contains("not signed in"), "{notice}");
+}
+
+#[tokio::test]
+async fn a_cloud_preference_synced_from_another_device_does_not_switch_this_one() {
+    let backend = wiremock::MockServer::start().await;
+    mount_signed_in_backend(
+        &backend,
+        serde_json::json!({
+            "version": 3,
+            "updated_at": "2026-11-06T10:00:00Z",
+            "preferences": {
+                "settings": {
+                    "auto_answer_model": "claude-haiku-5-5",
+                    "manual_model": "gpt-5",
+                    "spend_cap_micro_usd": 3_000_000,
+                    "locale": "pt-BR",
+                    "auto_answer": false,
+                    "invisible": true,
+                    "engine_preference": "cloud"
+                },
+                "shortcuts": {},
+                "modes": [{
+                    "id": "0197a2b0-0000-7000-8000-000000000001",
+                    "name": "Interview",
+                    "system_prompt": "Be brief.",
+                    "updated_at": "2026-11-06T09:00:00Z"
+                }]
+            }
+        }),
+    )
+    .await;
+    let browser = Arc::new(FakeBrowser::default());
+    let mut h = harness(Opts {
+        account: Some(account_config(&backend, &browser)),
+        refresh_token: Some("r1"),
+        ..Opts::default()
+    });
+    let s = h
+        .wait(|s| s.settings.spend_cap_micro_usd == 3_000_000)
+        .await;
+    assert_eq!(s.settings.engine_preference, EnginePreference::Local);
+    let s = h.wait(|s| !s.modes.is_empty()).await;
+    assert_eq!(s.modes[0].name, "Interview");
+    assert_eq!(s.modes[0].system_prompt, "Be brief.");
+    assert!(s.modes[0].files.is_empty());
+}

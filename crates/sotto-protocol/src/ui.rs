@@ -145,7 +145,8 @@ pub struct SettingsView {
     pub available_locales: Vec<String>,
     /// Which engine the next session transcribes with.
     pub engine_preference: EnginePreference,
-    /// Credentials for cloud transcription exist (an OpenAI key in the Keychain).
+    /// Credentials for cloud transcription exist: an OpenAI key in the Keychain, or a signed-in
+    /// Sotto account that can get a hosted token.
     pub cloud_transcription_available: bool,
 }
 

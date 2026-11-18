@@ -13,8 +13,11 @@ use sotto_protocol::ui::{AccountState, AccountView};
 use wiremock::matchers::{body_partial_json, header, method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
-use super::{AccountConfig, AccountHandle, Applies, BackendUrl, Command, LocalSettings, spawn};
+use super::{
+    AccountConfig, AccountHandle, Applies, BackendUrl, Command, LocalMode, LocalSettings, spawn,
+};
 use crate::calendar::{UrlOpener, challenge_for};
+use crate::cloud_stt::{CloudCredentials, CredentialError, HostedOpenAi};
 use crate::secrets::{Account, MemoryStore, SecretStore};
 
 const WAIT: Duration = Duration::from_secs(5);
@@ -46,6 +49,14 @@ fn local() -> LocalSettings {
         locale: "en-US".into(),
         auto_answer: true,
         invisible: true,
+        // The mode `server_prefs` holds, so a pull has nothing extra to apply.
+        modes: vec![LocalMode {
+            id: "m1".into(),
+            name: "Interview".into(),
+            system_prompt: "Be brief.".into(),
+            updated_ms: 1_767_225_600_000,
+            deleted: false,
+        }],
     }
 }
 
@@ -70,6 +81,7 @@ fn server_prefs(l: &LocalSettings) -> Preferences {
             name: "Interview".into(),
             system_prompt: "Be brief.".into(),
             updated_at: "2026-01-01T00:00:00Z".into(),
+            deleted: false,
         }],
     }
 }
@@ -765,4 +777,245 @@ fn nothing_secret_is_printed_by_debug() {
         Command::DeepLink("sotto://auth/callback?code=SECRETCODE&state=SECRETSTATE".into()),
     );
     assert!(!text.contains("SECRET"));
+}
+
+// ---- hosted cloud transcription token ----
+
+fn minted(token: &str, fake: bool, ttl_secs: i64) -> ResponseTemplate {
+    let at = time::OffsetDateTime::now_utc() + time::Duration::seconds(ttl_secs);
+    ResponseTemplate::new(200).set_body_json(json!({
+        "provider": "openai",
+        "token": token,
+        "expires_at": at.format(&time::format_description::well_known::Rfc3339).unwrap(),
+        "fake": fake,
+    }))
+}
+
+async fn mount_mint(h: &Harness, response: ResponseTemplate) {
+    Mock::given(method("POST"))
+        .and(path("/v1/realtime-tokens"))
+        .and(header("authorization", "Bearer a2"))
+        .respond_with(response)
+        .mount(&h.server)
+        .await;
+}
+
+async fn signed_in_with_token_endpoint() -> Harness {
+    let h = harness(Some("r1"), Duration::from_secs(60)).await;
+    Mock::given(method("POST"))
+        .and(path("/v1/oauth/token"))
+        .respond_with(tokens("a2", "r2"))
+        .mount(&h.server)
+        .await;
+    h
+}
+
+#[tokio::test]
+async fn the_hosted_source_refreshes_the_access_token_and_returns_the_minted_token() {
+    let h = signed_in_with_token_endpoint().await;
+    mount_mint(&h, minted("ek_hosted", false, 600)).await;
+    h.wait("the keychain session", |v| {
+        v.state == AccountState::SignedIn
+    })
+    .await;
+
+    let credential = HostedOpenAi::new(h.handle.clone())
+        .credential()
+        .await
+        .unwrap();
+    assert_eq!(credential.bearer(), "ek_hosted");
+    let left = credential.expires_at().unwrap() - std::time::Instant::now();
+    assert!(left > Duration::from_secs(500));
+    assert_eq!(h.requests("/v1/oauth/token").await.len(), 1, "one refresh");
+    assert_eq!(
+        h.requests("/v1/realtime-tokens").await,
+        vec![json!({"provider": "openai", "locale": null})]
+    );
+    assert_eq!(
+        h.secrets.get(Account::AuthRefresh).unwrap().as_deref(),
+        Some("r2"),
+        "the rotated refresh token stays in the keychain"
+    );
+}
+
+#[tokio::test]
+async fn a_fake_token_is_never_handed_to_the_engine() {
+    let h = signed_in_with_token_endpoint().await;
+    mount_mint(&h, minted("fake_dev_token", true, 600)).await;
+    let err = HostedOpenAi::new(h.handle.clone())
+        .credential()
+        .await
+        .unwrap_err();
+    match err {
+        CredentialError::Unavailable(m) => assert!(!m.contains("fake_dev_token"), "{m}"),
+        other => panic!("expected Unavailable, got {other:?}"),
+    }
+}
+
+#[tokio::test]
+async fn signed_out_the_hosted_source_has_nothing_and_asks_nobody() {
+    let h = harness(None, Duration::from_secs(60)).await;
+    let err = HostedOpenAi::new(h.handle.clone())
+        .credential()
+        .await
+        .unwrap_err();
+    assert_eq!(err, CredentialError::Missing);
+    assert!(h.server.received_requests().await.unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn a_backend_failure_is_reported_without_signing_out() {
+    let h = signed_in_with_token_endpoint().await;
+    mount_mint(
+        &h,
+        ResponseTemplate::new(429).set_body_json(json!({"error": "rate_limited", "message": "x"})),
+    )
+    .await;
+    let err = HostedOpenAi::new(h.handle.clone())
+        .credential()
+        .await
+        .unwrap_err();
+    assert!(matches!(err, CredentialError::Unavailable(_)), "{err:?}");
+    assert_eq!(h.view().state, AccountState::SignedIn);
+}
+
+// ---- mode sync ----
+
+fn mode(id: &str, prompt: &str, updated_ms: i64) -> LocalMode {
+    LocalMode {
+        id: id.into(),
+        name: format!("Mode {id}"),
+        system_prompt: prompt.into(),
+        updated_ms,
+        deleted: false,
+    }
+}
+
+#[tokio::test]
+async fn modes_travel_as_names_prompts_and_tombstones_and_a_remote_mode_is_applied() {
+    let mut h = harness(Some("r1"), Duration::from_secs(60)).await;
+    Mock::given(method("POST"))
+        .and(path("/v1/oauth/token"))
+        .respond_with(tokens("a2", "r2"))
+        .mount(&h.server)
+        .await;
+    h.mount_session("a2", "me@example.com").await;
+    h.mount_prefs_get(
+        "a2",
+        doc(
+            4,
+            Some(server_prefs(&local())),
+            Some("2026-02-01T00:00:00Z"),
+        ),
+    )
+    .await;
+    h.mount_put(
+        4,
+        ResponseTemplate::new(200).set_body_json(doc(
+            5,
+            Some(server_prefs(&local())),
+            Some("2026-11-06T10:00:00Z"),
+        )),
+    )
+    .await;
+
+    let mut gone = mode("old", "", 1_800_000_000_000);
+    gone.deleted = true;
+    h.handle.send(Command::Local(LocalSettings {
+        modes: vec![mode("mine", "Be kind.", 1_800_000_000_000), gone],
+        ..local()
+    }));
+    let applied = tokio::time::timeout(WAIT, h.applies.recv())
+        .await
+        .unwrap()
+        .unwrap();
+    let ids: Vec<_> = applied.modes.iter().map(|m| m.id.as_str()).collect();
+    assert_eq!(
+        ids,
+        ["m1", "mine", "old"],
+        "the server's mode arrives, mine stay"
+    );
+    assert_eq!(applied.modes[0].system_prompt, "Be brief.");
+
+    h.handle.send(Command::Local(LocalSettings {
+        modes: applied.modes.clone(),
+        locale: "pt-BR".into(),
+        ..local()
+    }));
+    tokio::time::sleep(SETTLE).await;
+    let puts: Vec<Value> = h
+        .requests("/v1/preferences")
+        .await
+        .into_iter()
+        .filter(|b| !b.is_null())
+        .collect();
+    let modes = puts[0]["preferences"]["modes"].as_array().unwrap();
+    assert_eq!(modes.len(), 3);
+    let old = modes.iter().find(|m| m["id"] == "old").unwrap();
+    assert_eq!(old["deleted"], true);
+    assert_eq!(old["system_prompt"], "");
+    let mine = modes.iter().find(|m| m["id"] == "mine").unwrap();
+    assert!(mine.get("deleted").is_none());
+    assert!(
+        mine["updated_at"]
+            .as_str()
+            .unwrap()
+            .starts_with("2027-01-1")
+    );
+    for m in modes {
+        let keys: Vec<_> = m.as_object().unwrap().keys().cloned().collect();
+        assert!(
+            keys.iter()
+                .all(|k| ["id", "name", "system_prompt", "updated_at", "deleted"]
+                    .contains(&k.as_str())),
+            "only names and prompts are synced: {keys:?}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn a_cloud_engine_preference_on_the_server_is_not_applied_and_not_overwritten() {
+    let mut h = harness(Some("r1"), Duration::from_secs(60)).await;
+    Mock::given(method("POST"))
+        .and(path("/v1/oauth/token"))
+        .respond_with(tokens("a2", "r2"))
+        .mount(&h.server)
+        .await;
+    h.mount_session("a2", "me@example.com").await;
+    // `server_prefs` carries `engine_preference: "cloud"` from another device.
+    let other = LocalSettings {
+        locale: "pt-BR".into(),
+        ..local()
+    };
+    h.mount_prefs_get(
+        "a2",
+        doc(1, Some(server_prefs(&other)), Some("2026-02-01T00:00:00Z")),
+    )
+    .await;
+    h.mount_put(
+        1,
+        ResponseTemplate::new(200).set_body_json(doc(2, Some(server_prefs(&other)), None)),
+    )
+    .await;
+    h.handle.send(Command::Local(local()));
+    let applied = tokio::time::timeout(WAIT, h.applies.recv())
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(applied.locale, "pt-BR");
+    h.handle.send(Command::Local(LocalSettings {
+        spend_cap_micro_usd: 1,
+        ..applied
+    }));
+    tokio::time::sleep(SETTLE).await;
+    let puts: Vec<Value> = h
+        .requests("/v1/preferences")
+        .await
+        .into_iter()
+        .filter(|b| !b.is_null())
+        .collect();
+    assert_eq!(
+        puts[0]["preferences"]["settings"]["engine_preference"], "cloud",
+        "the stored value is carried through, never decided by this device"
+    );
 }

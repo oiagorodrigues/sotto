@@ -206,7 +206,7 @@ impl SpeakerTask {
                 Err(e) => {
                     let message = match e {
                         CredentialError::Missing => {
-                            "No OpenAI key is saved. Add one in Settings > Models".to_string()
+                            "No OpenAI key is saved and you are not signed in to Sotto. Add a key in Settings > Models or sign in in Settings > Account".to_string()
                         }
                         other => other.to_string(),
                     };

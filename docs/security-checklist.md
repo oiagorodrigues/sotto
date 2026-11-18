@@ -24,6 +24,7 @@ Each item names how it is checked: `auto` (part of `just check` or a test), or `
 | 18 | Origin and other request headers are not rewritten globally | auto (grep rule) |
 | 19 | The embedding model is used only when its installed digest equals the one in `config/embedding.toml`; a mismatch is refused with a notice | auto (tests) |
 | 20 | The webview never sends or receives file paths or file contents: the file panel opens from Rust, the shell hands paths to the core, and the core checks type and size | auto (intent tests, config test) + manual |
+| 21 | Synced preferences never switch the engine: a remote `engine_preference` is carried through untouched and never applied; mode sync carries names and system prompts only; a hosted `fake` token is never sent to the provider | auto (account and core tests) |
 
 ## Results
 

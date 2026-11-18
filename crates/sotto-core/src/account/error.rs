@@ -19,6 +19,8 @@ pub enum AccountError {
     InvalidGrant,
     #[error("Your session ended. Sign in again.")]
     SessionEnded,
+    #[error("You are not signed in to Sotto")]
+    NotSignedIn,
     #[error("Sotto did not accept the access token")]
     Unauthorized,
     #[error("Too many requests; try again in a moment")]

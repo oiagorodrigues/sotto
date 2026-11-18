@@ -16,11 +16,13 @@ mod url;
 use std::sync::Arc;
 use std::time::Duration;
 
+use sotto_protocol::api::RealtimeTokenResponse;
 use sotto_protocol::ui::{AccountState, AccountView};
-use tokio::sync::{mpsc, watch};
+use tokio::sync::{mpsc, oneshot, watch};
 
 pub use self::error::AccountError;
-pub use self::prefs::LocalSettings;
+pub(crate) use self::prefs::TOMBSTONE_TTL_MS;
+pub use self::prefs::{LocalMode, LocalSettings};
 pub use self::url::BackendUrl;
 use crate::calendar::UrlOpener;
 use crate::secrets::SecretStore;
@@ -92,6 +94,8 @@ pub(crate) enum Command {
     DeepLink(String),
     /// The settings this device has now, reported after every change and once at start.
     Local(LocalSettings),
+    /// A short-lived cloud transcription token, minted by the backend.
+    RealtimeToken(oneshot::Sender<Result<RealtimeTokenResponse, AccountError>>),
 }
 
 impl std::fmt::Debug for Command {
@@ -102,6 +106,7 @@ impl std::fmt::Debug for Command {
             Self::SyncNow => "SyncNow",
             Self::DeepLink(_) => "DeepLink",
             Self::Local(_) => "Local",
+            Self::RealtimeToken(_) => "RealtimeToken",
         })
     }
 }
@@ -121,6 +126,15 @@ impl AccountHandle {
     /// a login this process started is ignored.
     pub fn deep_link(&self, url: &str) {
         self.send(Command::DeepLink(url.to_string()));
+    }
+
+    /// Asks the backend for a cloud transcription token through the account task, which
+    /// refreshes the access token first when it has expired. The token is returned to the
+    /// caller and kept nowhere else.
+    pub async fn realtime_token(&self) -> Result<RealtimeTokenResponse, AccountError> {
+        let (tx, rx) = oneshot::channel();
+        self.send(Command::RealtimeToken(tx));
+        rx.await.map_err(|_| AccountError::NotConfigured)?
     }
 
     #[must_use]

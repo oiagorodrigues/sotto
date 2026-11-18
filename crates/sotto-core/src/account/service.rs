@@ -5,7 +5,9 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use sotto_protocol::api::{
     CLIENT_ID, PreferencesDocument, PutPreferences, TokenRequest, TokenResponse,
 };
-use sotto_protocol::api::{Preferences, REDIRECT_URI};
+use sotto_protocol::api::{
+    Preferences, REDIRECT_URI, RealtimeProvider, RealtimeTokenRequest, RealtimeTokenResponse,
+};
 use sotto_protocol::ui::{AccountState, AccountView};
 use tokio::sync::{mpsc, watch};
 use tokio::time::Instant;
@@ -13,7 +15,7 @@ use tokio::time::Instant;
 use super::api::Client;
 use super::error::AccountError;
 use super::pending::Pending;
-use super::prefs::{self, Dirty, FIELDS, LocalSettings};
+use super::prefs::{self, Dirty, FIELDS, LocalSettings, parse_ms};
 use super::url::parse_callback;
 use super::{AccountConfig, Command};
 use crate::secrets::{Account, SecretStore};
@@ -79,12 +81,6 @@ fn unix_ms() -> i64 {
         .duration_since(UNIX_EPOCH)
         .map(|d| i64::try_from(d.as_millis()).unwrap_or(i64::MAX))
         .unwrap_or(0)
-}
-
-fn parse_ms(rfc3339: &str) -> Option<i64> {
-    let t = time::OffsetDateTime::parse(rfc3339, &time::format_description::well_known::Rfc3339)
-        .ok()?;
-    i64::try_from(t.unix_timestamp_nanos() / 1_000_000).ok()
 }
 
 async fn at(deadline: Option<Instant>) {
@@ -191,6 +187,9 @@ impl Actor {
             Command::SyncNow => self.sync_cycle().await,
             Command::DeepLink(url) => self.on_deep_link(&url).await,
             Command::Local(settings) => self.on_local(settings).await,
+            Command::RealtimeToken(reply) => {
+                let _ = reply.send(self.realtime_token().await);
+            }
         }
     }
 
@@ -383,6 +382,23 @@ impl Actor {
         self.sign_out_local(None);
     }
 
+    // ---- cloud transcription ----
+
+    async fn realtime_token(&mut self) -> Result<RealtimeTokenResponse, AccountError> {
+        if !self.signed_in() {
+            return Err(AccountError::NotSignedIn);
+        }
+        let body = RealtimeTokenRequest {
+            provider: RealtimeProvider::Openai,
+            locale: None,
+        };
+        self.authed(|c, t| {
+            let body = body.clone();
+            async move { c.realtime_token(&t, &body).await }
+        })
+        .await
+    }
+
     // ---- preferences ----
 
     async fn on_local(&mut self, settings: LocalSettings) {
@@ -462,8 +478,7 @@ impl Actor {
             (_, None) => false,
             (None, Some(_)) => true,
             (Some(server), Some(local)) => {
-                !self.sync.dirty.is_empty()
-                    && LocalSettings::from_synced(&server.settings) != *local
+                !self.sync.dirty.is_empty() && LocalSettings::from_preferences(server) != *local
             }
         }
     }
@@ -478,7 +493,7 @@ impl Actor {
             };
             let body = PutPreferences {
                 base_version: self.sync.version,
-                preferences: prefs::compose(self.sync.server.as_ref(), &local),
+                preferences: prefs::compose(self.sync.server.as_ref(), &local, unix_ms()),
             };
             let result = self
                 .authed(|c, t| {
@@ -515,8 +530,8 @@ impl Actor {
         };
         if let Some(local) = self.sync.local.clone() {
             let updated = doc.updated_at.as_deref().and_then(parse_ms);
-            let merged = prefs::merge(&local, &self.sync.dirty, &server.settings, updated);
-            let remote = LocalSettings::from_synced(&server.settings);
+            let merged = prefs::merge(&local, &self.sync.dirty, &server, updated);
+            let remote = LocalSettings::from_preferences(&server);
             self.sync
                 .dirty
                 .retain(|field, _| merged.differs(&remote, *field));

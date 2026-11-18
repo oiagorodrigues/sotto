@@ -5,8 +5,8 @@ use std::time::Duration;
 use reqwest::StatusCode;
 use serde::de::DeserializeOwned;
 use sotto_protocol::api::{
-    ErrorBody, MeResponse, PreferencesConflict, PreferencesDocument, PutPreferences, TokenRequest,
-    TokenResponse,
+    ErrorBody, MeResponse, PreferencesConflict, PreferencesDocument, PutPreferences,
+    RealtimeTokenRequest, RealtimeTokenResponse, TokenRequest, TokenResponse,
 };
 
 use super::error::AccountError;
@@ -58,6 +58,19 @@ impl Client {
             .bearer_auth(access);
         send(req).await?;
         Ok(())
+    }
+
+    pub async fn realtime_token(
+        &self,
+        access: &str,
+        body: &RealtimeTokenRequest,
+    ) -> Result<RealtimeTokenResponse, AccountError> {
+        let req = self
+            .http
+            .post(self.backend.endpoint("/v1/realtime-tokens"))
+            .bearer_auth(access)
+            .json(body);
+        parse(send(req).await?)
     }
 
     pub async fn get_preferences(&self, access: &str) -> Result<PreferencesDocument, AccountError> {

@@ -800,6 +800,30 @@ async fn preferences_are_per_account(pool: PgPool) {
 }
 
 #[sqlx::test(migrator = "crate::MIGRATOR")]
+async fn a_deleted_mode_syncs_as_a_tombstone_without_its_prompt(pool: PgPool) {
+    let app = App::new(pool);
+    let (token, _) = app.tokens_for("ada@example.com").await;
+
+    let mut kept = prefs_body(0, "en-US");
+    kept["preferences"]["modes"][0]["deleted"] = json!(true);
+    let r = app
+        .json(Method::PUT, "/v1/preferences", Some(&token), &kept)
+        .await;
+    assert_eq!(r.status, StatusCode::BAD_REQUEST, "a tombstone with a prompt");
+
+    let mut gone = prefs_body(0, "en-US");
+    gone["preferences"]["modes"][0]["deleted"] = json!(true);
+    gone["preferences"]["modes"][0]["system_prompt"] = json!("");
+    let r = app
+        .json(Method::PUT, "/v1/preferences", Some(&token), &gone)
+        .await;
+    assert_eq!(r.status, StatusCode::OK, "{}", r.body);
+    let got: Value = app.get_auth("/v1/preferences", &token).await.json();
+    assert_eq!(got["preferences"]["modes"][0]["deleted"], true);
+    assert_eq!(got["preferences"]["modes"][0]["system_prompt"], "");
+}
+
+#[sqlx::test(migrator = "crate::MIGRATOR")]
 async fn preferences_reject_unknown_fields_bad_values_and_big_bodies(pool: PgPool) {
     let app = App::new(pool);
     let (token, _) = app.tokens_for("ada@example.com").await;
@@ -847,7 +871,7 @@ async fn preferences_reject_unknown_fields_bad_values_and_big_bodies(pool: PgPoo
     assert_eq!(put(many).await.status, StatusCode::BAD_REQUEST);
 
     let mut huge = prefs_body(0, "en-US");
-    huge["preferences"]["shortcuts"] = json!({"k": "v".repeat(70 * 1024)});
+    huge["preferences"]["shortcuts"] = json!({"k": "v".repeat(600 * 1024)});
     let r = put(huge).await;
     assert_eq!(r.status, StatusCode::PAYLOAD_TOO_LARGE);
     assert_eq!(r.json::<Value>()["error"], "payload_too_large");
@@ -1069,10 +1093,11 @@ async fn openai_provider_calls_the_client_secrets_endpoint(pool: PgPool) {
         body["session"]["audio"]["input"]["transcription"]["model"],
         "gpt-live-transcribe"
     );
-    assert_eq!(
-        body["session"]["audio"]["input"]["transcription"]["language"],
-        "pt"
-    );
+    let input = &body["session"]["audio"]["input"];
+    assert_eq!(input["transcription"]["languages"], json!(["pt"]));
+    assert!(input["transcription"].get("language").is_none());
+    assert!(input["turn_detection"].is_null() && input.get("turn_detection").is_some());
+    assert_eq!(input["format"], json!({"type": "audio/pcm", "rate": 24000}));
     assert_eq!(body["expires_after"]["seconds"], 600);
 
     let dump: Vec<(String,)> =

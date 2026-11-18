@@ -65,6 +65,9 @@ fn validate(p: &Preferences) -> Result<(), ApiError> {
         if m.system_prompt.chars().count() > MAX_PROMPT_CHARS {
             return Err(invalid("A mode prompt is too long."));
         }
+        if m.deleted && !m.system_prompt.is_empty() {
+            return Err(invalid("A deleted mode keeps no prompt."));
+        }
         if m.updated_at.len() > 40 || DateTime::parse_from_rfc3339(&m.updated_at).is_err() {
             return Err(invalid("Mode updated_at must be an RFC 3339 time."));
         }

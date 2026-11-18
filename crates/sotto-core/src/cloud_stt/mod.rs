@@ -12,7 +12,9 @@ mod pcm;
 mod resample;
 pub mod wire;
 
-pub use credentials::{ByokOpenAi, CloudCredentials, Credential, CredentialError};
+pub use credentials::{
+    ByokOpenAi, CloudCredentials, Credential, CredentialError, FirstAvailable, HostedOpenAi,
+};
 pub use engine::{CloudConfig, CloudEngine, CloudEvent, FeedError};
 pub use gate::{GateAction, GateConfig, TurnGate};
 pub use mapper::Mapper;

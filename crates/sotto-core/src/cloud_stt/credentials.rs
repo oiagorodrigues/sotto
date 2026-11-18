@@ -1,12 +1,13 @@
-//! Where the cloud engine gets its bearer token. The BYOK implementation reads the user's
-//! OpenAI key from the Keychain; hosted mode (ADR 0005) will mint a short-lived token through
-//! the backend and return it with an expiry.
+//! Where the cloud engine gets its bearer token. The BYOK source reads the user's OpenAI key from
+//! the Keychain; the hosted source (ADR 0005) asks the backend for a short-lived token through
+//! the account task. [`FirstAvailable`] tries them in that order.
 
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use async_trait::async_trait;
 
+use crate::account::{AccountError, AccountHandle};
 use crate::secrets::{Account, SecretStore};
 
 /// A bearer token. `Debug` never prints it.
@@ -101,6 +102,89 @@ impl CloudCredentials for ByokOpenAi {
     }
 }
 
+/// A short-lived OpenAI token minted by the Sotto backend for the signed-in account.
+#[derive(Clone)]
+pub struct HostedOpenAi {
+    account: AccountHandle,
+}
+
+impl HostedOpenAi {
+    #[must_use]
+    pub fn new(account: AccountHandle) -> Self {
+        Self { account }
+    }
+}
+
+impl std::fmt::Debug for HostedOpenAi {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("HostedOpenAi").finish_non_exhaustive()
+    }
+}
+
+fn expiry_instant(rfc3339: &str) -> Option<Instant> {
+    let at = time::OffsetDateTime::parse(rfc3339, &time::format_description::well_known::Rfc3339)
+        .ok()?;
+    let now = SystemTime::now().duration_since(UNIX_EPOCH).ok()?;
+    let ms = u64::try_from(at.unix_timestamp_nanos() / 1_000_000).ok()?;
+    let left = Duration::from_millis(ms).saturating_sub(now);
+    Some(Instant::now() + left)
+}
+
+#[async_trait]
+impl CloudCredentials for HostedOpenAi {
+    async fn credential(&self) -> Result<Credential, CredentialError> {
+        let minted = match self.account.realtime_token().await {
+            Ok(t) => t,
+            Err(AccountError::NotSignedIn) => return Err(CredentialError::Missing),
+            Err(e) => return Err(CredentialError::Unavailable(e.to_string())),
+        };
+        // A fake token is useless upstream; refuse it so no audio goes to OpenAI with it.
+        if minted.fake {
+            return Err(CredentialError::Unavailable(
+                "the Sotto backend is running its development transcription provider".into(),
+            ));
+        }
+        let expires_at = expiry_instant(&minted.expires_at).ok_or_else(|| {
+            CredentialError::Unavailable("Sotto sent a token expiry the app cannot read".into())
+        })?;
+        Ok(Credential::new(minted.token, Some(expires_at)))
+    }
+}
+
+/// Tries each source in order and moves on only when one has nothing to offer. Any other
+/// failure is returned, so a Keychain error never silently switches the user to hosted mode.
+pub struct FirstAvailable {
+    sources: Vec<Arc<dyn CloudCredentials>>,
+}
+
+impl FirstAvailable {
+    #[must_use]
+    pub fn new(sources: Vec<Arc<dyn CloudCredentials>>) -> Self {
+        Self { sources }
+    }
+}
+
+impl std::fmt::Debug for FirstAvailable {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("FirstAvailable")
+            .field("sources", &self.sources)
+            .finish()
+    }
+}
+
+#[async_trait]
+impl CloudCredentials for FirstAvailable {
+    async fn credential(&self) -> Result<Credential, CredentialError> {
+        for source in &self.sources {
+            match source.credential().await {
+                Err(CredentialError::Missing) => {}
+                other => return other,
+            }
+        }
+        Err(CredentialError::Missing)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -135,5 +219,61 @@ mod tests {
         let c = Credential::new("t", Some(now));
         assert!(c.is_expired(now));
         assert!(!c.is_expired(now - std::time::Duration::from_secs(1)));
+    }
+
+    #[derive(Debug)]
+    struct Fixed(Result<&'static str, CredentialError>);
+
+    #[async_trait]
+    impl CloudCredentials for Fixed {
+        async fn credential(&self) -> Result<Credential, CredentialError> {
+            self.0.clone().map(|t| Credential::new(t, None))
+        }
+    }
+
+    fn chain(sources: [Result<&'static str, CredentialError>; 2]) -> FirstAvailable {
+        FirstAvailable::new(
+            sources
+                .into_iter()
+                .map(|s| Arc::new(Fixed(s)) as Arc<dyn CloudCredentials>)
+                .collect(),
+        )
+    }
+
+    #[tokio::test]
+    async fn the_chain_prefers_the_first_source_and_falls_through_only_on_missing() {
+        let missing = || Err(CredentialError::Missing);
+        let c = chain([Ok("own"), Ok("hosted")]).credential().await.unwrap();
+        assert_eq!(c.bearer(), "own");
+        let c = chain([missing(), Ok("hosted")]).credential().await.unwrap();
+        assert_eq!(c.bearer(), "hosted");
+        assert_eq!(
+            chain([missing(), missing()])
+                .credential()
+                .await
+                .unwrap_err(),
+            CredentialError::Missing
+        );
+        let broken = Err(CredentialError::Store("locked".into()));
+        assert_eq!(
+            chain([broken, Ok("hosted")])
+                .credential()
+                .await
+                .unwrap_err(),
+            CredentialError::Store("locked".into())
+        );
+    }
+
+    #[test]
+    fn expiry_comes_from_the_rfc3339_time() {
+        let at = SystemTime::now() + Duration::from_secs(600);
+        let secs = at.duration_since(UNIX_EPOCH).unwrap().as_secs();
+        let text = time::OffsetDateTime::from_unix_timestamp(i64::try_from(secs).unwrap())
+            .unwrap()
+            .format(&time::format_description::well_known::Rfc3339)
+            .unwrap();
+        let left = expiry_instant(&text).unwrap() - Instant::now();
+        assert!(left > Duration::from_secs(590) && left <= Duration::from_secs(600));
+        assert!(expiry_instant("tomorrow").is_none());
     }
 }

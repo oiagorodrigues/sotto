@@ -110,6 +110,16 @@ pub struct ModeRow {
     pub system_prompt: String,
 }
 
+/// A mode as sync sees it: live or tombstoned, with its last change time.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModeSyncRow {
+    pub id: Uuid,
+    pub name: String,
+    pub system_prompt: String,
+    pub updated_ms: i64,
+    pub deleted: bool,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModeFileRow {
     pub id: Uuid,
@@ -493,6 +503,53 @@ impl Db {
             "UPDATE modes SET name = ?2, system_prompt = ?3, updated_at = ?4
              WHERE id = ?1 AND deleted_at IS NULL",
             params![id.to_string(), name, system_prompt, now_ms],
+        )?;
+        Ok(())
+    }
+
+    /// Every mode, tombstones included, for preference sync.
+    pub fn modes_for_sync(&self) -> Result<Vec<ModeSyncRow>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT id, name, system_prompt, updated_at, deleted_at IS NOT NULL FROM modes ORDER BY id",
+        )?;
+        let rows = stmt.query_map([], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+                r.get::<_, i64>(3)?,
+                r.get::<_, bool>(4)?,
+            ))
+        })?;
+        let mut out = Vec::new();
+        for row in rows {
+            let (id, name, system_prompt, updated_ms, deleted) = row?;
+            out.push(ModeSyncRow {
+                id: id.parse()?,
+                name,
+                system_prompt,
+                updated_ms,
+                deleted,
+            });
+        }
+        Ok(out)
+    }
+
+    /// Writes a mode that came from another device, with that device's edit time. A tombstone
+    /// with the same id is lifted.
+    pub fn upsert_synced_mode(
+        &self,
+        id: Uuid,
+        name: &str,
+        system_prompt: &str,
+        updated_ms: i64,
+    ) -> Result<()> {
+        self.conn.execute(
+            "INSERT INTO modes (id, name, system_prompt, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?4)
+             ON CONFLICT(id) DO UPDATE SET name = ?2, system_prompt = ?3, updated_at = ?4,
+                                           deleted_at = NULL",
+            params![id.to_string(), name, system_prompt, updated_ms],
         )?;
         Ok(())
     }

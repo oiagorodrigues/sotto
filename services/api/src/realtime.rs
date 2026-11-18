@@ -9,10 +9,12 @@ use crate::{ApiJson, AppState, Authed, config::RealtimeConfig, crypto, error::Ap
 const TOKEN_TTL_SECS: i64 = 600;
 const AUDIT_ACTION: &str = "mint_realtime_token";
 
-/// `en` from `en-US`, only when it is a plain 2 letter language code.
+/// `en` from `en-US`, only when it is a plain 2 letter language code. Chinese is left out
+/// because the transcription API wants regional `zh-*` codes for it.
 fn language_hint(locale: Option<&str>) -> Option<String> {
     let lang = locale?.split(['-', '_']).next()?.to_ascii_lowercase();
-    (lang.len() == 2 && lang.chars().all(|c| c.is_ascii_lowercase())).then_some(lang)
+    (lang.len() == 2 && lang.chars().all(|c| c.is_ascii_lowercase()) && lang != "zh")
+        .then_some(lang)
 }
 
 #[derive(Deserialize)]
@@ -30,7 +32,8 @@ async fn mint_openai(
 ) -> Result<(String, DateTime<Utc>), ApiError> {
     let mut transcription = json!({ "model": model });
     if let Some(lang) = language_hint(locale) {
-        transcription["language"] = json!(lang);
+        // `gpt-live-transcribe` takes `languages`; the singular field is for other models.
+        transcription["languages"] = json!([lang]);
     }
     let body = json!({
         "expires_after": { "anchor": "created_at", "seconds": TOKEN_TTL_SECS },
@@ -39,6 +42,7 @@ async fn mint_openai(
             "audio": { "input": {
                 "format": { "type": "audio/pcm", "rate": 24000 },
                 "transcription": transcription,
+                "turn_detection": null,
             } },
         },
     });
@@ -166,6 +170,7 @@ mod tests {
         assert_eq!(language_hint(Some("pt-BR")).as_deref(), Some("pt"));
         assert_eq!(language_hint(Some("en")).as_deref(), Some("en"));
         assert_eq!(language_hint(Some("fil-PH")), None);
+        assert_eq!(language_hint(Some("zh-CN")), None);
         assert_eq!(language_hint(None), None);
     }
 }

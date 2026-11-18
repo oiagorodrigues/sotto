@@ -613,6 +613,7 @@ impl Core {
 
     fn refresh_settings_view(&mut self) {
         self.snap.settings = self.providers.view(&self.settings);
+        self.snap.settings.cloud_transcription_available |= self.signed_in();
         self.dirty = true;
     }
 

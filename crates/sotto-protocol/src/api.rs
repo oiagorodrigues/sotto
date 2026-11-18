@@ -35,7 +35,7 @@ pub const REFRESH_TOKEN_TTL_SECS: u64 = 30 * 24 * 60 * 60;
 /// Authorization code lifetime in seconds.
 pub const AUTH_CODE_TTL_SECS: u64 = 60;
 /// Largest `PUT /v1/preferences` body the server reads.
-pub const MAX_PREFERENCES_BODY_BYTES: usize = 64 * 1024;
+pub const MAX_PREFERENCES_BODY_BYTES: usize = 512 * 1024;
 /// Most modes one account can sync.
 pub const MAX_MODES: usize = 100;
 /// Longest mode system prompt, in characters.
@@ -146,9 +146,13 @@ pub struct SyncedMode {
     /// Client generated id, 1 to 64 characters of `[A-Za-z0-9_-]`.
     pub id: String,
     pub name: String,
+    /// Empty for a deleted mode.
     pub system_prompt: String,
-    /// RFC 3339 time of the last local edit.
+    /// RFC 3339 time of the last local edit, or of the deletion.
     pub updated_at: String,
+    /// A tombstone: the mode was deleted at `updated_at`. Lets a deletion reach other devices.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub deleted: bool,
 }
 
 /// The synced document without its version.

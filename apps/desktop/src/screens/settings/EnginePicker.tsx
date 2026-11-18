@@ -13,6 +13,7 @@ interface Props {
 export function EnginePicker({ settings, onOpenModels }: Props) {
   const [dialog, setDialog] = useState<"confirm" | "needs-key" | null>(null);
   const cloud = settings.engine_preference === "cloud";
+  const ownKey = settings.providers.some((p) => p.provider === "openai" && p.configured);
   const choose = (engine: "local" | "cloud") => {
     if (engine === "local") {
       void dispatch({ type: "set_engine_preference", engine });
@@ -42,7 +43,7 @@ export function EnginePicker({ settings, onOpenModels }: Props) {
         {cloud && !settings.cloud_transcription_available ? (
           <p className="engine-warn" role="alert">
             <Icon name="alert" size={12} />
-            Sessions will not start until you add an OpenAI key.
+            Sessions will not start until you add an OpenAI key or sign in.
           </p>
         ) : null}
       </div>
@@ -72,12 +73,16 @@ export function EnginePicker({ settings, onOpenModels }: Props) {
             While you listen, the speech of everyone on the call, including the other participants,
             is sent to OpenAI to be transcribed. Sotto never switches to this on its own.
           </p>
-          <p>Your OpenAI key is billed for the minutes of speech sent.</p>
+          <p>
+            {ownKey
+              ? "Your OpenAI key is billed for the minutes of speech sent."
+              : "Sotto's hosted transcription is used because no OpenAI key is saved."}
+          </p>
         </Dialog>
       )}
       {dialog === "needs-key" && (
         <Dialog
-          title="Add an OpenAI key first"
+          title="Add an OpenAI key or sign in first"
           onClose={() => setDialog(null)}
           footer={
             <>
@@ -98,7 +103,10 @@ export function EnginePicker({ settings, onOpenModels }: Props) {
             </>
           }
         >
-          <p>Cloud transcription uses your OpenAI account, so it needs a key saved in Models.</p>
+          <p>
+            Cloud transcription needs an OpenAI key saved in Models, or a Sotto account signed in
+            under Account.
+          </p>
         </Dialog>
       )}
     </section>
